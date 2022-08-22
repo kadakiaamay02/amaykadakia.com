@@ -3437,6 +3437,11 @@ img.u-pull-left {
     margin-left : 0;
 }
 
+.about-expertise .h2 {
+    font-size   : var(--text-xl);
+    letter-spacing: .2rem;
+}
+
 .about-expertise .skills-list li {
     display      : inline-block;
     padding-left : 0;
