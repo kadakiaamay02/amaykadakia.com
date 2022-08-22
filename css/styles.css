@@ -3212,8 +3212,8 @@ img.u-pull-left {
     z-index          : 1;
     list-style       : none;
     display          : flex;
-    font-size        : 1rem;
-    font-weight      : 400;
+    font-size        : 2rem;
+    font-weight      : 300;
     text-transform   : uppercase;
     letter-spacing   : .3em;
     margin           : 0;
@@ -3230,12 +3230,12 @@ img.u-pull-left {
 }
 
 .intro-social a {
-    color : var(--color-text-light);
+    color : #E1D9D1;
 }
 
 .intro-social a:focus,
 .intro-social a:hover {
-    color : white;
+    color : var(--color-1);
 }
 
 /* --------------------------------------------------------------------
