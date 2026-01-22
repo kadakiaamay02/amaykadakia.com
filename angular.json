@@ -28,7 +28,8 @@
               "src/favicon.ico",
               "src/assets",
               "src/app/images",
-              "src/site.webmanifest"
+              "src/site.webmanifest",
+              "AmayKadakia.pdf"
             ],
             "styles": [
               "src/styles.scss",

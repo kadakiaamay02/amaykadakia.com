@@ -6,7 +6,7 @@ export const routes: Routes = [
   {
     path: '',
     children: [
-      { path: '', component: AboutComponent },
+      { path: '', component: AboutComponent }
     ]
   }
 ];
