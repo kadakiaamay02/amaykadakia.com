@@ -29,7 +29,11 @@
               "src/assets",
               "src/app/images",
               "src/site.webmanifest",
-              "AmayKadakia.pdf"
+              {
+                "glob": "AmayKadakia.pdf",
+                "input": "./",
+                "output": "/"
+              }
             ],
             "styles": [
               "src/styles.scss",
