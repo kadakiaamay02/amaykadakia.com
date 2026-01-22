@@ -1,0 +1,93 @@
+<section id="about" class="s-about target-section">
+  <div class="row about-info wide" data-animate-block>
+    <div class="column lg-6 md-12 about-info__pic-block">
+      <!-- Optional: Add about photo here -->
+    </div>
+
+    <div class="column lg-6 md-12">
+      <div class="about-info__text">
+        <h2 class="text-pretitle with-line" data-animate-el>
+          About
+        </h2>
+        <p class="attention-getter" data-animate-el>
+          I am a Senior Frontend developer for Fidelity Investments.
+          I am pursing a Master of Science in Computer Science with a specialization in Computing
+          Systems from Georgia Institute of Technology.
+          I recently graduated from the University of Texas at Arlington with a B.Sc in Computer
+          Science Engineering.
+        </p>
+        <a href="https://amaykadakia.com/AmayKadakia.pdf" target="_blank"
+          class="btn btn--medium u-fullwidth" data-animate-el>Resume</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row about-timelines" data-animate-block>
+    <div class="column lg-6 tab-12">
+      <h2 class="text-pretitle" data-animate-el>
+        Experience
+      </h2>
+
+      <div class="timeline" data-animate-el>
+        <div *ngFor="let entry of experience" class="timeline__block">
+          <div class="timeline__bullet"></div>
+          <div class="timeline__header">
+            <h4 class="timeline__title">{{ entry.title }}</h4>
+            <h5 class="timeline__meta">{{ entry.subtitle }}</h5>
+            <p class="timeline__timeframe">{{ entry.timeframe }}</p>
+            <div *ngFor="let desc of entry.description" class="timeline__desc">
+              <p>{{ desc }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="column lg-6 tab-12">
+      <h2 class="text-pretitle" data-animate-el>
+        Education
+      </h2>
+
+      <div class="timeline" data-animate-el>
+        <div *ngFor="let entry of education" class="timeline__block">
+          <div class="timeline__bullet"></div>
+          <div class="timeline__header">
+            <h4 class="timeline__title">{{ entry.title }}</h4>
+            <h5 class="timeline__meta">{{ entry.subtitle }}</h5>
+            <p class="timeline__timeframe">{{ entry.timeframe }}</p>
+            <div *ngFor="let desc of entry.description" class="timeline__desc">
+              <p>{{ desc }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row about-expertise" data-animate-block>
+    <div class="column lg-12">
+      <h2 class="text-pretitle" data-animate-el>Skills</h2>
+
+      <ul class="skills-list h2" data-animate-el>
+        <li *ngFor="let skill of skills">{{ skill.name }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="row about-expertise" data-animate-block id="certs">
+    <div class="column lg-12">
+      <h2 class="text-pretitle" data-animate-el>Certifications</h2>
+
+      <ul class="Cerf-list h2" data-animate-el>
+        <li *ngFor="let cert of certifications">
+          {{ cert.organization }}
+          <ul id="cerflinks">
+            <li *ngFor="let certification of cert.certifications">
+              <a href="{{ certification.link }}" target="_blank">{{ certification.title }}</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
