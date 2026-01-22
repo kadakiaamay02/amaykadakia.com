@@ -1,20 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PortfolioService } from '../../services/portfolio.service';
+import { PortfolioGridComponent } from '../portfolio-grid/portfolio-grid.component';
+import { StatsGridComponent } from '../stats-grid/stats-grid.component';
 import { TimelineEntry, Skill, Certification } from '../../models/portfolio.model';
+import { PORTFOLIO_PROJECTS } from '../../models/portfolio-data';
 
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PortfolioGridComponent, StatsGridComponent],
   templateUrl: './about.component.html',
-  styleUrls: ['./about.component.scss']
+  styleUrls: ['./css/styles.css', './css/vendor.css']
 })
 export class AboutComponent implements OnInit {
   experience: TimelineEntry[] = [];
   education: TimelineEntry[] = [];
   skills: Skill[] = [];
   certifications: Certification[] = [];
+  portfolioProjects = PORTFOLIO_PROJECTS;
 
   constructor(private portfolioService: PortfolioService) {}
 
