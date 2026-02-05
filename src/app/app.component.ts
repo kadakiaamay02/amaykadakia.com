@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { AboutComponent } from './components/about/about.component';
 import { AnimationService } from './services/animation.service';
 
@@ -8,8 +9,8 @@ import { AnimationService } from './services/animation.service';
   standalone: true,
   imports: [
     CommonModule,
-    AboutComponent,
-
+    RouterModule,
+    AboutComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
