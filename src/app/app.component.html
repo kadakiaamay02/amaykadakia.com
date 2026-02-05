@@ -2,4 +2,36 @@
   <div id="loader"></div>
 </div>
 
-<router-outlet></router-outlet>
+<div class="s-pagewrap">
+  <header class="s-header">
+    <div class="header-mobile">
+        <span class="mobile-home-link"><a routerLink="/">Amay Kadakia.</a></span>
+        <a class="mobile-menu-toggle" href="#0"><span>Menu</span></a>
+    </div>
+    <div class="row wide main-nav-wrap">
+        <nav class="column lg-12 main-nav">
+            <ul>
+                <li><a routerLink="/" class="home-link" routerLinkActive="current" [routerLinkActiveOptions]="{exact: true}">About</a></li>
+                <li><a routerLink="/games" routerLinkActive="current">Games</a></li>
+            </ul>
+        </nav>
+    </div>
+  </header>
+
+  <main class="s-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <footer class="s-footer">
+      <div class="row">
+          <div class="column ss-copyright">
+              <span>© Copyright Amay Kadakia 2024</span>
+          </div>
+          <div class="ss-go-top">
+              <a class="smoothscroll" title="Back to Top" href="#top">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 0l-6 9h4v15h4V9h4z"/></svg>
+              </a>
+          </div>
+      </div>
+  </footer>
+</div>
