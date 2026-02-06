@@ -3,21 +3,18 @@
 # 1. Navigate to your project folder
 cd /home/laezy/amaykadakia.com
 
-# 2. Pull the latest changes from GitHub
-git pull origin main
+# 2. Pull the latest code from the feature branch (as seen in your logs)
+git pull origin feature/angular
 
-# 3. Install dependencies (if any new ones were added)
-npm install
-
-# 4. Build the Angular app
-# Using the local project name found in your package.json
+# 3. Build the Angular app
 npx ng build --configuration production
 
-# 5. Clear the old web files and move the new build
-sudo rm -rf /var/www/html/*
-sudo cp -r dist/amaykadakia-portfolio/* /var/www/html/
+# 4. Move files to the NEW specific domain folder
+# Note: Using your project name 'amaykadakia-portfolio' from previous logs
+sudo rm -rf /var/www/amaykadakia.com/public_html/*
+sudo cp -r dist/amaykadakia-portfolio/* /var/www/amaykadakia.com/public_html/
 
-# 6. Ensure Apache has correct permissions
-sudo chown -R www-data:www-data /var/www/html/
+# 5. Reset permissions
+sudo chown -R www-data:www-data /var/www/amaykadakia.com/
 
-echo "Deployment successful at $(date)"
+echo "Deployment to amaykadakia.com successful at $(date)"
