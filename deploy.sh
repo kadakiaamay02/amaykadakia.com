@@ -4,7 +4,7 @@
 cd /home/laezy/amaykadakia.com
 
 # 2. Pull the latest code from the feature branch (as seen in your logs)
-git pull origin feature/angular
+git pull origin main
 
 # 3. Build the Angular app
 npx ng build --configuration production
