@@ -2,11 +2,11 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SamayLoginService } from '../../services/samay-login.service';
-
+import { RouterLink } from '@angular/router';  
 @Component({
   selector: 'app-samay-menu',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './samay-menu.component.html',
   styleUrl: './samay-menu.component.scss'
 })
