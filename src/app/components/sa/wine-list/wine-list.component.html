@@ -1,1 +1,36 @@
-<p>wine-list works!</p>
+<div class="wine-list-centerpiece">
+	<div class="wine-list" *ngIf="wines.length">
+		<h2>Wine List</h2>
+		<ul>
+			<li *ngFor="let wine of wines">
+				<strong>{{ wine.name }}</strong> (Rating: {{ wine.rating }})<br />
+				<em>{{ wine.notes }}</em>
+			</li>
+		</ul>
+	</div>
+	<div *ngIf="!wines.length" class="empty-message">
+		<p>No wines added yet.</p>
+	</div>
+	<button class="add-wine-btn" (click)="openForm()" *ngIf="!showForm">Add Wine</button>
+	<div class="wine-form" *ngIf="showForm">
+		<h3>Add a Wine</h3>
+		<form (ngSubmit)="addWine()" #wineForm="ngForm">
+			<label>
+				Name:
+				<input type="text" [(ngModel)]="newWine.name" name="name" required />
+			</label>
+			<label>
+				Rating:
+				<input type="number" [(ngModel)]="newWine.rating" name="rating" min="1" max="10" required />
+			</label>
+			<label>
+				Notes:
+				<textarea [(ngModel)]="newWine.notes" name="notes"></textarea>
+			</label>
+			<div class="form-actions">
+				<button type="submit" [disabled]="!wineForm.form.valid">Add</button>
+				<button type="button" (click)="cancelForm()">Cancel</button>
+			</div>
+		</form>
+	</div>
+</div>
