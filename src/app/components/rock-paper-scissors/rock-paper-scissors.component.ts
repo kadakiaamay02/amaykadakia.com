@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { RockPaperScissorsService } from '@app/services/rockpaperscissors.service';
+import { FlashService } from '@app/services/flash.service';
 
 
 @Component({
@@ -19,13 +20,7 @@ export class RockPaperScissorsComponent implements OnInit {
 
   };
 
-  OriginalColor = {
-    Hex: '#121212'
-  }
-
-  Timer = {
-    time: 800
-  }
+  // Removed OriginalColor and Timer, now handled by FlashService
 
   ngOnInit(): void {
     
@@ -33,6 +28,11 @@ export class RockPaperScissorsComponent implements OnInit {
   }
 
   private gameService = new RockPaperScissorsService();
+  constructor(public flashService: FlashService) {
+    // Optionally set timer/color here if needed
+    // this.flashService.setTimer(800);
+    // this.flashService.setOriginalColor('#121212');
+  }
   title = 'The Rock Paper Scissor Game';
   wins = 0;
   draws = 0;
@@ -87,32 +87,12 @@ export class RockPaperScissorsComponent implements OnInit {
       }
     }
     
-    this.flashBackgroundColor(color);
-    this.flashText();
+    this.flashService.flashBackgroundColor(color);
+    this.flashService.flashText((val: string) => this.flashTextdata = val, this.flashTextdata);
     this.saveScores();
   };
 
-  flashBackgroundColor(color: string): void {
-    const app = document.querySelector('app-root') as HTMLElement;
-    if (!app) {
-      console.warn('ion-app not found');
-      return;
-    }
-    // Set the new color
-    app.style.setProperty('background', color);
-  
-    // Reset to the original color after 500 ms
-    setTimeout(() => {
-      app.style.setProperty('background', this.OriginalColor.Hex);
-    }, this.Timer.time);
-  }
-  
-
-  flashText():void {
-    setTimeout(() => {
-      this.flashTextdata = ''; 
-    }, this.Timer.time); // Duration of the flash in milliseconds
-  };
+  // flashBackgroundColor and flashText now handled by FlashService
 
   getComputerMove(): number {
     return Math.floor(Math.random() * 3) + 1;

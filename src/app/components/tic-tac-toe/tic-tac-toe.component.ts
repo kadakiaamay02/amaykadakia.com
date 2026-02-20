@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { FlashService } from '@app/services/flash.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -8,18 +9,37 @@ import { CommonModule } from '@angular/common';
   templateUrl: './tic-tac-toe.component.html',
   styleUrl: './tic-tac-toe.component.scss'
 })
+
 export class TicTacToeComponent {
-  board: any[] = Array(9).fill(null);
+  flashTextdata: string = '';
+  board: (string | null)[] = Array(9).fill(null);
   currentPlayer: 'X' | 'O' = 'X';
   winner: string | null = null;
   gameMode: 'human' | 'machine' = 'human';
   gameStarted: boolean = false;
+  
 
-  makeMove(index: number) {
+  constructor(private flashService: FlashService) {}
+
+  makeMove(index: number): void {
     if (!this.board[index] && !this.winner) {
       this.board[index] = this.currentPlayer;
       this.winner = this.calculateWinner(this.board);
-      if (!this.winner) {
+      if (this.winner) {
+        if (this.winner === 'X') {
+          this.flashTextdata = `Player X wins!`;
+          this.flashService.flashResult('win', (val: string) => this.flashTextdata = val, this.flashTextdata);
+        } else if (this.winner === 'O') {
+          this.flashTextdata = `Player O wins!`;
+          this.flashService.flashResult('lose', (val: string) => this.flashTextdata = val, this.flashTextdata);
+        } else {
+          this.flashTextdata = 'Draw!';
+          this.flashService.flashResult('draw', (val: string) => this.flashTextdata = val, this.flashTextdata);
+        }
+      } else if (this.isBoardFull()) {
+        this.flashTextdata = 'Draw!';
+        this.flashService.flashResult('draw', (val: string) => this.flashTextdata = val, this.flashTextdata);
+      } else {
         this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X';
         if (this.gameMode === 'machine' && this.currentPlayer === 'O') {
           this.machineMove();
@@ -28,7 +48,7 @@ export class TicTacToeComponent {
     }
   }
 
-  machineMove() {
+  machineMove(): void {
     // 1. Find winning move for 'O'
     for (let i = 0; i < 9; i++) {
       if (!this.board[i]) {
@@ -77,19 +97,19 @@ export class TicTacToeComponent {
 
     // 6. Random move (should not be reached if board is not full)
     const availableMoves = this.board
-      .map((cell, index) => (cell === null ? index : null))
-      .filter(index => index !== null);
+      .map((cell: string | null, index: number) => (cell === null ? index : null))
+      .filter((index: number | null): index is number => index !== null);
 
     if (availableMoves.length > 0) {
       const randomIndex = Math.floor(Math.random() * availableMoves.length);
       const move = availableMoves[randomIndex];
-      if (move !== null) {
+      if (move !== undefined) {
         this.makeMove(move);
       }
     }
   }
 
-  calculateWinner(board: any[]): string | null {
+  calculateWinner(board: (string | null)[]): string | null {
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -104,13 +124,13 @@ export class TicTacToeComponent {
     for (let i = 0; i < lines.length; i++) {
       const [a, b, c] = lines[i];
       if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-        return board[a];
+        return board[a] as string;
       }
     }
     return null;
   }
 
-  setGameMode(mode: 'human' | 'machine') {
+  setGameMode(mode: 'human' | 'machine'): void {
     this.gameMode = mode;
     this.board = Array(9).fill(null);
     this.currentPlayer = 'X';
@@ -118,11 +138,16 @@ export class TicTacToeComponent {
     this.gameStarted = true;
   }
 
-  resetGame() {
+  resetGame(): void {
     this.board = Array(9).fill(null);
     this.currentPlayer = 'X';
     this.winner = null;
-    this.gameStarted = false;
+    this.flashTextdata = '';
+  }
+
+  toggleMode(): void {
+    this.gameMode = this.gameMode === 'human' ? 'machine' : 'human';
+    this.resetGame();
   }
 
   isBoardFull(): boolean {

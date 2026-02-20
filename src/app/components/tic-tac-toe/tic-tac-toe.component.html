@@ -18,19 +18,17 @@
       <div class="cell" *ngFor="let cell of board; let i = index" (click)="makeMove(i)">
         {{ cell }}
       </div>
+
+            <div class="about-info__text">
+              <button (click)="toggleMode()">Change Mode ({{ gameMode === 'human' ? 'Human vs. Human' : 'Human vs. Machine' }})</button>
+            @if(this.isBoardFull() || winner) {
+              <button (click)="resetGame()">New Game</button>
+              }
+
+
     </div>
 
-            <span class="s-contact">
-            <div class="row about-info wide" >
-                    <div class="column lg-4 md-12 about-info__pic-block">
-                    </div>
-                <div class="column lg-6 md-12">
-                    <div class="about-info__text">
-                          <button (click)="resetGame()">New Game</button>
-                    </div>
-                </div>
-            </div>
-        </span>
+           
 
 
   </div>
