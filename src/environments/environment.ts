@@ -4,5 +4,6 @@
 export const environment = {
   production: false,
   name: 'Amay Kadakia Portfolio',
-  version: '1.0.0'
+  version: '1.0.0',
+  samayPassword: '100518' // Do not use real secrets here!
 };
