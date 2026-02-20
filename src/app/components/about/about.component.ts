@@ -13,7 +13,7 @@ import { AnimationService } from '@app/services/animation.service';
   standalone: true,
   imports: [CommonModule, PortfolioGridComponent, StatsGridComponent, RouterLink],
   templateUrl: './about.component.html',
-  styleUrls: ['./css/styles.css', './css/vendor.css']
+  // styleUrls removed: global styles should be imported in index.html, not per component
 })
 export class AboutComponent implements OnInit, AfterViewInit {
   private animationService = inject(AnimationService);

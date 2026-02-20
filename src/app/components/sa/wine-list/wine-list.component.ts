@@ -3,6 +3,7 @@ import { SortingServiceService } from '@app/services/s/sorting-service.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WineService } from '@app/services/s/wine-service.service';
+import { HttpClientModule } from '@angular/common/http';
 
 export interface Wine {
   name: string;
@@ -12,7 +13,7 @@ export interface Wine {
 @Component({
   selector: 'app-wine-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './wine-list.component.html',
   styleUrl: './wine-list.component.scss'
 })
