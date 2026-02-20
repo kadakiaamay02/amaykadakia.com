@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { SortingServiceService } from '@app/services/s/sorting-service.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { WineService } from '@app/services/s/wine-service.service';
 
 export interface Wine {
   name: string;
@@ -20,15 +21,32 @@ export class WineListComponent {
   newWine: Wine = { name: '', rating: 1, notes: '' };
   showForm = false;
 
-  constructor(private sortingService: SortingServiceService) {}
+  constructor(private sortingService: SortingServiceService, private wineService: WineService) {}
+  ngOnInit() {
+    this.loadWines();
+  }
 
-  addWine() {
-    if (this.newWine.name.trim()) {
-      this.wines.push({ ...this.newWine });
-      this.wines = this.sortingService.sortByKey(this.wines, 'rating', 'desc');
-      this.newWine = { name: '', rating: 1, notes: '' };
-      this.showForm = false;
-    }
+  loadWines(): void {
+    this.wineService.getWines().subscribe({
+      next: (data) => {
+        this.wines = data;
+      },
+      error: (err) => console.error('Error fetching wines', err)
+    });
+  }
+
+  onSubmit(): void {
+    // Send the new wine to the Python backend
+    this.wineService.addWine(this.newWine).subscribe({
+      next: (response) => {
+        console.log('Wine saved!', response);
+        this.loadWines(); // Refresh the list to show the new entry
+        
+        // Reset the form inputs
+        this.newWine = { name: '', rating: 1, notes: '' };
+      },
+      error: (err) => console.error('Error saving wine', err)
+    });
   }
 
   openForm() {

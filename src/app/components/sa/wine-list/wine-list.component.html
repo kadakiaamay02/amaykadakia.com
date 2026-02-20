@@ -14,7 +14,7 @@
 	<button class="add-wine-btn" (click)="openForm()" *ngIf="!showForm">Add Wine</button>
 	<div class="wine-form" *ngIf="showForm">
 		<h3>Add a Wine</h3>
-		<form (ngSubmit)="addWine()" #wineForm="ngForm">
+		<form (ngSubmit)="onSubmit()" #wineForm="ngForm">
 			<label>
 				Name:
 				<input type="text" [(ngModel)]="newWine.name" name="name" required />
