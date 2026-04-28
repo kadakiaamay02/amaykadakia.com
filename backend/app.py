@@ -2,6 +2,15 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import sqlite3
 
+# backend/app.py additions
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # loads from backend/.env
+
+PASSWORD = os.environ.get('PASSWORD')
+
+
 app = Flask(__name__)
 # Enable CORS so your Angular app can make requests to this API
 CORS(app)
@@ -36,6 +45,14 @@ def get_wines():
     conn.close()
     
     return jsonify(wines)
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    if data.get('password') == PASSWORD:
+        return jsonify({'success': True}), 200
+    return jsonify({'success': False, 'message': 'Incorrect password.'}), 401
 
 @app.route('/wines', methods=['POST'])
 def add_wine():

@@ -25,6 +25,7 @@ pkill -f "python app.py" || true
 cd backend
 source venv/bin/activate
 # nohup keeps it running after the script finishes, and & puts it in the background
+pip install python-dotenv
 # Output is saved to api.log for debugging
 nohup python app.py > api.log 2>&1 &
 cd ..

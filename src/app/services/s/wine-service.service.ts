@@ -14,7 +14,7 @@ export interface Wine {
   providedIn: 'root'
 })
 export class WineService {
-  private apiUrl = environment.wineApiUrl;
+  private apiUrl = `${environment.apiUrl}/wines`;
 
   constructor(private http: HttpClient) { }
 

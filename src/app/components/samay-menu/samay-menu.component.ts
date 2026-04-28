@@ -17,13 +17,15 @@ export class SamayMenuComponent {
 
   constructor(private samayLoginService: SamayLoginService) {}
 
-  checkPassword(): void {
-    if (this.samayLoginService.validate(this.password)) {
+ checkPassword(): void {
+  this.samayLoginService.validate(this.password).subscribe(valid => {
+    if (valid) {
       this.showMenu = true;
       this.error = '';
     } else {
       this.error = 'Incorrect password.';
     }
-  }
+  });
+}
 
 }
