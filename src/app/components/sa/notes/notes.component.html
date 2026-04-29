@@ -30,7 +30,10 @@
     </div>
 
     <div class="note-card" *ngFor="let note of notes">
-      <p class="note-content">{{ note.content }}</p>
+      <div class="note-header">
+        <p class="note-content">{{ note.content }}</p>
+        <button class="delete-btn" (click)="deleteNote(note.id)">🗑️</button>
+      </div>
       <span class="due-date" *ngIf="note.due_date">📅 Due: {{ note.due_date }}</span>
       <span class="timestamp">Added: {{ note.created_at }}</span>
     </div>

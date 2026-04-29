@@ -95,6 +95,15 @@ def add_note():
 
     return jsonify({'id': new_id, 'message': 'Note added!'}), 201
 
+@app.route('/notes/<int:note_id>', methods=['DELETE'])
+def delete_note(note_id):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute('DELETE FROM notes WHERE id = ?', (note_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Note deleted!'}), 200
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
