@@ -16,7 +16,8 @@
       [(ngModel)]="newDueDate"
     />
 
-    <button (click)="addNote()">Add & Print</button>
+    <button (click)="addNote()">Add</button>
+    <button (click)="addAndPrintNote()">Add & Print</button>
   </div>
 
   <!-- Success / Error Messages -->
@@ -33,6 +34,7 @@
       <div class="note-header">
         <p class="note-content">{{ note.content }}</p>
         <button class="delete-btn" (click)="deleteNote(note.id)">🗑️</button>
+        <button class="print-btn" (click)="printNote(note.id)">🖨️</button>
       </div>
       <span class="due-date" *ngIf="note.due_date">📅 Due: {{ note.due_date }}</span>
       <span class="timestamp">Added: {{ note.created_at }}</span>

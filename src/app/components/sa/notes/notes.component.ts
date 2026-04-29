@@ -51,7 +51,7 @@ export class NotesComponent implements OnInit {
   });
 }
 
-  addNote(): void {
+  addAndPrintNote(): void {
     if (!this.newNote.trim()) return;
 
     this.http.post<{ id: number, message: string }>(this.apiUrl, {
@@ -68,4 +68,33 @@ export class NotesComponent implements OnInit {
       error: () => this.error = 'Failed to add note.'
     });
   }
+
+    addNote(): void {
+    if (!this.newNote.trim()) return;
+
+    this.http.post<{ id: number, message: string }>(`${this.apiUrl}/add`, {
+      content: this.newNote,
+      due_date: this.newDueDate || null
+    }).subscribe({
+      next: () => {
+        this.success = 'Note added and printed!';
+        this.newNote = '';
+        this.newDueDate = '';
+        this.loadNotes();
+        setTimeout(() => this.success = '', 3000);
+      },
+      error: () => this.error = 'Failed to add note.'
+    });
+  }
+  
+  printNote(id: number): void {
+  this.http.post(`${this.apiUrl}/${id}/print`, {}).subscribe({
+    next: () => {
+      this.success = 'Note printed!';
+      setTimeout(() => this.success = '', 3000);
+    },
+    error: () => this.error = 'Failed to print note.'
+  });
+}
+
 }
