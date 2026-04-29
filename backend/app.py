@@ -33,6 +33,7 @@ def init_db():
 init_db()
 
 def print_to_printer(content, due_date=None):
+    p = None
     try:
         p = Usb(0x1d81, 0x5721)
         p.set(align='center', bold=True, height=2, width=2)
@@ -47,6 +48,12 @@ def print_to_printer(content, due_date=None):
         p.cut()
     except Exception as e:
         print(f"Printer error: {e}")
+    finally:
+        try:
+            if p:
+                p.close()
+        except:
+            pass
 
 @app.route('/wines', methods=['GET'])
 def get_wines():
@@ -105,6 +112,21 @@ def delete_note(note_id):
     conn.commit()
     conn.close()
     return jsonify({'message': 'Note deleted!'}), 200
+
+@app.route('/notes/add', methods=['POST'])
+def add_note_only():
+    data = request.get_json()
+    content = data.get('content')
+    due_date = data.get('due_date')
+
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute('INSERT INTO notes (content, due_date) VALUES (?, ?)', (content, due_date))
+    conn.commit()
+    new_id = c.lastrowid
+    conn.close()
+
+    return jsonify({'id': new_id, 'message': 'Note added!'}), 201
 
 @app.route('/notes/<int:note_id>/print', methods=['POST'])
 def print_note(note_id):
