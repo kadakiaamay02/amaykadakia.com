@@ -64,7 +64,7 @@ def get_notes():
     return jsonify(notes)
 
 @app.route('/notes', methods=['POST'])
-def add_note():
+def add_print_note():
     data = request.get_json()
     content = data.get('content')
     due_date = data.get('due_date')
@@ -95,6 +95,22 @@ def add_note():
 
     return jsonify({'id': new_id, 'message': 'Note added!'}), 201
 
+@app.route('/notes/add', methods=['POST'])
+def add_print_note():
+    data = request.get_json()
+    content = data.get('content')
+    due_date = data.get('due_date')
+
+    # Save to DB
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute('INSERT INTO notes (content, due_date) VALUES (?, ?)', (content, due_date))
+    conn.commit()
+    new_id = c.lastrowid
+    conn.close()
+
+    return jsonify({'id': new_id, 'message': 'Note added!'}), 201
+
 @app.route('/notes/<int:note_id>', methods=['DELETE'])
 def delete_note(note_id):
     conn = sqlite3.connect(DATABASE)
@@ -110,6 +126,36 @@ def login():
     if data.get('password') == PASSWORD:
         return jsonify({'success': True}), 200
     return jsonify({'success': False, 'message': 'Incorrect password.'}), 401
+
+@app.route('/notes/<int:note_id>/print', methods=['POST'])
+def print_note(note_id):
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('SELECT * FROM notes WHERE id = ?', (note_id,))
+    note = c.fetchone()
+    conn.close()
+
+    if not note:
+        return jsonify({'error': 'Note not found'}), 404
+
+    try:
+        p = Usb(0x1d81, 0x5721)
+        p.set(align='center', bold=True, height=2, width=2)
+        p.text("NOTE\n")
+        p.set(align='left', bold=False, height=1, width=1)
+        p.text("-" * 32 + "\n")
+        p.text(f"{note['content']}\n")
+        if note['due_date']:
+            p.text("-" * 32 + "\n")
+            p.text(f"Due: {note['due_date']}\n")
+        p.text("-" * 32 + "\n")
+        p.cut()
+    except Exception as e:
+        print(f"Printer error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+    return jsonify({'message': 'Note printed!'}), 200
 
 @app.route('/wines', methods=['POST'])
 def add_wine():
