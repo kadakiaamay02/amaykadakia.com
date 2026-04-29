@@ -19,6 +19,7 @@ export const routes: Routes = [
       { path: 'samay/restaurants', component: RestaurantListComponent },
       { path: 'games/rock-paper-scissors', component: RockPaperScissorsComponent},
       { path: 'games/tic-tac-toe', component: TicTacToeComponent }
+      {path: 'notes', component: AboutComponent}
     ]
   }
 ];
