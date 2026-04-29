@@ -35,7 +35,7 @@ sudo systemctl restart apache2
 
 # 8. Send success email
 DEPLOY_TIME=$(date)
-echo "Deployment to amaykadakia.com was successful at $DEPLOY_TIME." \
+echo "Deployment to amaykadakia.com was successful at $DEPLOY_TIME. This is an automated email." \
   | mail -s "✅ Deploy Successful – amaykadakia.com" $NOTIFY_EMAIL
 
 echo "Deployment successful and API activated at $DEPLOY_TIME"
