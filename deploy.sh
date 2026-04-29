@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Email addresses to notify
 NOTIFY_EMAIL="amaykadakia@gmail.com"
 
 # 1. Navigate to your project folder
 cd /home/laezy/amaykadakia.com
 
-# 2. Pull the latest code from main
+# 2. Set git pull strategy and pull latest
+git config pull.rebase false
 git pull origin main
 
 # 3. Build the Angular app
@@ -19,12 +19,11 @@ sudo cp -r dist/amaykadakia-portfolio/* /var/www/amaykadakia.com/public_html/
 # 5. Reset permissions
 sudo chown -R www-data:www-data /var/www/amaykadakia.com/
 
-# 6. Activate the Python API
+# 6. Restart Backend API
 echo "Restarting Backend API..."
 pkill -f "python app.py" || true
 
 cd backend
-python3 -m venv venv
 source venv/bin/activate
 pip install flask flask-cors python-dotenv python-escpos pyusb --quiet
 nohup python app.py > api.log 2>&1 &
@@ -39,4 +38,4 @@ DEPLOY_TIME=$(date)
 echo "Deployment to amaykadakia.com was successful at $DEPLOY_TIME." \
   | mail -s "✅ Deploy Successful – amaykadakia.com" $NOTIFY_EMAIL
 
-echo "Deployment to amaykadakia.com successful and API activated at $DEPLOY_TIME"
+echo "Deployment successful and API activated at $DEPLOY_TIME"
