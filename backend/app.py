@@ -36,30 +36,39 @@ def print_to_printer(content, due_date=None, created_at=None):
     p = None
     try:
         p = Usb(0x1d81, 0x5721)
+
         # Header
         p.set(align='center', bold=True, height=2, width=2)
         p.text("NOTE\n")
         p.text("================================\n")
+
         # Content
         p.set(align='left', bold=False, height=1, width=1)
+        p.text("\n")
         p.text(f"{content}\n")
+        p.text("\n")
+
         # Divider
         p.text("--------------------------------\n")
+
         # Metadata
         if due_date:
             p.set(align='left', bold=True, height=1, width=1)
-            p.text("DUE DATE: ")
+            p.text("DUE DATE:\n")
             p.set(align='left', bold=False, height=1, width=1)
             p.text(f"  {due_date}\n")
 
         if created_at:
             p.set(align='left', bold=True, height=1, width=1)
-            p.text("ADDED: ")
+            p.text("ADDED:\n")
             p.set(align='left', bold=False, height=1, width=1)
             p.text(f"  {created_at}\n")
 
         # Footer
         p.text("================================\n")
+        p.text("\n")
+        p.text("\n")
+        p.cut()
 
     except Exception as e:
         print(f"Printer error: {e}")
