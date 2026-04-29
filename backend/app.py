@@ -32,20 +32,35 @@ def init_db():
 
 init_db()
 
-def print_to_printer(content, due_date=None):
+def print_to_printer(content, due_date=None, created_at=None):
     p = None
     try:
         p = Usb(0x1d81, 0x5721)
+        # Header
         p.set(align='center', bold=True, height=2, width=2)
         p.text("NOTE\n")
+        p.text("================================\n")
+        # Content
         p.set(align='left', bold=False, height=1, width=1)
-        p.text("-" * 32 + "\n")
         p.text(f"{content}\n")
+        # Divider
+        p.text("--------------------------------\n")
+        # Metadata
         if due_date:
-            p.text("-" * 32 + "\n")
-            p.text(f"Due: {due_date}\n")
-        p.text("-" * 32 + "\n")
-        p.cut()
+            p.set(align='left', bold=True, height=1, width=1)
+            p.text("DUE DATE: ")
+            p.set(align='left', bold=False, height=1, width=1)
+            p.text(f"  {due_date}\n")
+
+        if created_at:
+            p.set(align='left', bold=True, height=1, width=1)
+            p.text("ADDED: ")
+            p.set(align='left', bold=False, height=1, width=1)
+            p.text(f"  {created_at}\n")
+
+        # Footer
+        p.text("================================\n")
+
     except Exception as e:
         print(f"Printer error: {e}")
     finally:
@@ -94,13 +109,18 @@ def add_note():
     due_date = data.get('due_date')
 
     conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('INSERT INTO notes (content, due_date) VALUES (?, ?)', (content, due_date))
     conn.commit()
     new_id = c.lastrowid
+
+    # Fetch the created_at that the DB generated
+    c.execute('SELECT created_at FROM notes WHERE id = ?', (new_id,))
+    created_at = c.fetchone()['created_at']
     conn.close()
 
-    print_to_printer(content, due_date)
+    print_to_printer(content, due_date, created_at)
 
     return jsonify({'id': new_id, 'message': 'Note added!'}), 201
 
@@ -140,7 +160,7 @@ def print_note(note_id):
     if not note:
         return jsonify({'error': 'Note not found'}), 404
 
-    print_to_printer(note['content'], note['due_date'])
+    print_to_printer(note['content'], note['due_date'], note['created_at'])
 
     return jsonify({'message': 'Note printed!'}), 200
 
