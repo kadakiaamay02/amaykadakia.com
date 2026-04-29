@@ -67,7 +67,6 @@ def print_to_printer(content, due_date=None, created_at=None):
         # Footer
         p.text("================================\n")
         p.text("\n")
-        p.text("\n")
         p.cut()
 
     except Exception as e:
