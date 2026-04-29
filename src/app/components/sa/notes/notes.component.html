@@ -1,0 +1,39 @@
+<div class="notes-container">
+
+  <h2>Notes</h2>
+
+  <!-- Add Note Form -->
+  <div class="add-note">
+    <textarea 
+      [(ngModel)]="newNote" 
+      placeholder="Write a note...">
+    </textarea>
+
+    <label for="dueDate">Due Date (optional)</label>
+    <input
+      type="date"
+      id="dueDate"
+      [(ngModel)]="newDueDate"
+    />
+
+    <button (click)="addNote()">Add & Print</button>
+  </div>
+
+  <!-- Success / Error Messages -->
+  <div class="error" *ngIf="error">{{ error }}</div>
+  <div class="success" *ngIf="success">{{ success }}</div>
+
+  <!-- Notes List -->
+  <div class="notes-list">
+    <div *ngIf="notes.length === 0" class="empty-state">
+      No notes yet. Add one above!
+    </div>
+
+    <div class="note-card" *ngFor="let note of notes">
+      <p class="note-content">{{ note.content }}</p>
+      <span class="due-date" *ngIf="note.due_date">📅 Due: {{ note.due_date }}</span>
+      <span class="timestamp">Added: {{ note.created_at }}</span>
+    </div>
+  </div>
+
+</div>
