@@ -54,13 +54,13 @@ def print_to_printer(content, due_date=None, created_at=None):
         # Metadata
         if due_date:
             p.set(align='left', bold=True, height=1, width=1)
-            p.text("DUE DATE:\n")
+            p.text("DUE DATE: ")
             p.set(align='left', bold=False, height=1, width=1)
             p.text(f"  {due_date}\n")
 
         if created_at:
             p.set(align='left', bold=True, height=1, width=1)
-            p.text("ADDED:\n")
+            p.text("ADDED: ")
             p.set(align='left', bold=False, height=1, width=1)
             p.text(f"  {created_at}\n")
 
