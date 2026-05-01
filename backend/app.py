@@ -39,8 +39,8 @@ def print_to_printer(content, due_date=None, created_at=None):
 
         # Header
         p.set(align='center', bold=True, height=2, width=2)
-        p.text("NOTE")
         p.text("================================\n")
+        p.text("NOTE")
 
         # Content
         p.set(align='left', bold=False, height=1, width=1)
