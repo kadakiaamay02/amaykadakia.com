@@ -8,14 +8,3 @@ INFO:werkzeug:[33mPress CTRL+C to quit[0m
 INFO:werkzeug: * Restarting with stat
 WARNING:werkzeug: * Debugger is active!
 INFO:werkzeug: * Debugger PIN: 423-107-635
-INFO:werkzeug:127.0.0.1 - - [28/Apr/2026 22:54:00] "GET /notes HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [28/Apr/2026 22:54:16] "OPTIONS /notes HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [28/Apr/2026 22:54:37] "GET /notes HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [28/Apr/2026 22:55:59] "GET /notes HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [28/Apr/2026 22:56:28] "GET /wines HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [28/Apr/2026 22:56:36] "OPTIONS /wines HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [28/Apr/2026 22:57:54] "GET /wines HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [28/Apr/2026 22:58:03] "GET /notes HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [28/Apr/2026 22:58:20] "OPTIONS /notes HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [28/Apr/2026 22:58:21] "[35m[1mPOST /notes HTTP/1.1[0m" 201 -
-INFO:werkzeug:127.0.0.1 - - [28/Apr/2026 22:58:21] "GET /notes HTTP/1.1" 200 -
