@@ -16,12 +16,12 @@ export const routes: Routes = [
     children: [
       { path: '', component: AboutComponent },
       { path: 'games', component: GamesMenuComponent },
-      { path: 'samay', component: SamayMenuComponent },
+      { path: 'samay', component: SamayMenuComponent, canActivate: [samayGuard] },
       { path: 'samay/wines', component: WineListComponent, canActivate: [samayGuard] },
       { path: 'samay/restaurants', component: RestaurantListComponent, canActivate: [samayGuard] },
       { path: 'games/rock-paper-scissors', component: RockPaperScissorsComponent},
       { path: 'games/tic-tac-toe', component: TicTacToeComponent },
-      { path: 'notes', component: NotesComponent, canActivate: [samayGuard] }
+      { path: 'notes', component: NotesComponent}
     ]
   }
 ];
