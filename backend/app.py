@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import sqlite3
 import os
 from dotenv import load_dotenv
@@ -10,7 +12,15 @@ load_dotenv()
 PASSWORD = os.environ.get('PASSWORD')
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://amaykadakia.com", "http://localhost:4200"])
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024  # 16 KB max request body
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per hour", "50 per minute"],
+    storage_uri="memory://",
+)
 
 DATABASE = 'wine_list.db'
 
@@ -91,11 +101,24 @@ def get_wines():
 
 @app.route('/wines', methods=['POST'])
 def add_wine():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
+    name = data.get('name', '').strip()
+    rating = data.get('rating')
+    description = data.get('description', '')
+
+    if not name:
+        return jsonify({'error': 'name is required'}), 400
+    if len(name) > 200:
+        return jsonify({'error': 'name too long'}), 400
+    if rating is not None and (not isinstance(rating, int) or not (1 <= rating <= 10)):
+        return jsonify({'error': 'rating must be an integer between 1 and 10'}), 400
+    if description and len(description) > 1000:
+        return jsonify({'error': 'description too long'}), 400
+
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute('INSERT INTO wines (name, rating, description) VALUES (?, ?, ?)',
-              (data.get('name'), data.get('rating'), data.get('description')))
+              (name, rating, description))
     conn.commit()
     new_id = c.lastrowid
     conn.close()
@@ -113,9 +136,16 @@ def get_notes():
 
 @app.route('/notes', methods=['POST'])
 def add_note():
-    data = request.get_json()
-    content = data.get('content')
+    data = request.get_json(silent=True) or {}
+    content = data.get('content', '').strip()
     due_date = data.get('due_date')
+
+    if not content:
+        return jsonify({'error': 'content is required'}), 400
+    if len(content) > 2000:
+        return jsonify({'error': 'content too long'}), 400
+    if due_date and len(str(due_date)) > 50:
+        return jsonify({'error': 'due_date invalid'}), 400
 
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
@@ -144,9 +174,16 @@ def delete_note(note_id):
 
 @app.route('/notes/add', methods=['POST'])
 def add_note_only():
-    data = request.get_json()
-    content = data.get('content')
+    data = request.get_json(silent=True) or {}
+    content = data.get('content', '').strip()
     due_date = data.get('due_date')
+
+    if not content:
+        return jsonify({'error': 'content is required'}), 400
+    if len(content) > 2000:
+        return jsonify({'error': 'content too long'}), 400
+    if due_date and len(str(due_date)) > 50:
+        return jsonify({'error': 'due_date invalid'}), 400
 
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
@@ -174,11 +211,12 @@ def print_note(note_id):
     return jsonify({'message': 'Note printed!'}), 200
 
 @app.route('/login', methods=['POST'])
+@limiter.limit("5 per minute; 20 per hour")
 def login():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     if data.get('password') == PASSWORD:
         return jsonify({'success': True}), 200
     return jsonify({'success': False, 'message': 'Incorrect password.'}), 401
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=os.environ.get('FLASK_DEBUG', 'false').lower() == 'true')
