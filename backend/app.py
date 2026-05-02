@@ -3,7 +3,6 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import sqlite3
-import re
 import os
 from dotenv import load_dotenv
 from escpos.printer import Usb
@@ -13,7 +12,8 @@ load_dotenv()
 PASSWORD = os.environ.get('PASSWORD')
 
 app = Flask(__name__)
-CORS(app, origins=["https://amaykadakia.com", re.compile(r"http://(localhost|127\.0\.0\.1):\d+")])
+ALLOWED_ORIGINS = os.environ.get('ALLOWED_ORIGINS', '*')
+CORS(app, origins=ALLOWED_ORIGINS)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024  # 16 KB max request body
 
 limiter = Limiter(
