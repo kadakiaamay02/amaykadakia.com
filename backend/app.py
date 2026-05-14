@@ -79,6 +79,30 @@ def print_to_printer(content, due_date=None, created_at=None):
         except:
             pass
 
+def print_unifi_alert(content):
+    p = None
+    try:
+        p = Usb(0x1d81, 0x5721)
+
+        # Header
+        p.set(align='center', bold=True, height=2, width=2)
+        
+
+        # Content
+        p.set(align='left', bold=False, height=1, width=1)
+
+        p.text(f"{content}\n")
+        p.cut()
+
+    except Exception as e:
+        print(f"Printer error: {e}")
+    finally:
+        try:
+            if p:
+                p.close()
+        except:
+            pass
+
 @app.route('/wines', methods=['GET'])
 def get_wines():
     conn = sqlite3.connect(DATABASE)
@@ -146,11 +170,12 @@ def delete_note(note_id):
 def unifi_webhook():
     # Handle empty body or any format UniFi sends
     data = request.get_json(silent=True) or request.form.to_dict() or {}
-    print(f"Received UniFi webhook: {data}")
+    conditions = data.get('conditions', [])
     content = "UniFi Alert - Door Sensor Triggered"
-    print_to_printer(content, None, None)
+    print_to_printer(conditions, None, None)
 
     return jsonify({'message': 'OK'}), 200
+
 
 @app.route('/notes/add', methods=['POST'])
 def add_note_only():
