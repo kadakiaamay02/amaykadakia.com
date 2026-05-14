@@ -180,17 +180,17 @@ def unifi_webhook():
     
     content = "🚨 UniFi Alert - Door Sensor Triggered"
 
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute('INSERT INTO notes (content, due_date) VALUES (?, ?)', (content, None))
-    conn.commit()
-    new_id = c.lastrowid
-    c.execute('SELECT created_at FROM notes WHERE id = ?', (new_id,))
-    created_at = c.fetchone()['created_at']
-    conn.close()
+    # conn = sqlite3.connect(DATABASE)
+    # conn.row_factory = sqlite3.Row
+    # c = conn.cursor()
+    # c.execute('INSERT INTO notes (content, due_date) VALUES (?, ?)', (content, None))
+    # conn.commit()
+    # new_id = c.lastrowid
+    # c.execute('SELECT created_at FROM notes WHERE id = ?', (new_id,))
+    # created_at = c.fetchone()['created_at']
+    # conn.close()
 
-    print_to_printer(content, None, created_at)
+    # print_to_printer(content, None, created_at)
 
     return jsonify({'message': 'OK'}), 200
 
