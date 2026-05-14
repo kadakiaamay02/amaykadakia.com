@@ -175,13 +175,10 @@ def delete_note(note_id):
 
 @app.route('/webhook/unifi', methods=['POST'])
 def unifi_webhook():
-    # UniFi can send JSON or form data
-    data = request.get_json(silent=True) or request.form.to_dict()
+    # Handle empty body or any format UniFi sends
+    data = request.get_json(silent=True) or request.form.to_dict() or {}
     
-    # Build a note from whatever UniFi sends
-    event_type = data.get('event', data.get('type', 'Motion Detected'))
-    camera = data.get('camera', data.get('device', 'Unknown Camera'))
-    content = f"🚨 {event_type} - {camera}"
+    content = "🚨 UniFi Alert - Door Sensor Triggered"
 
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
@@ -195,7 +192,7 @@ def unifi_webhook():
 
     print_to_printer(content, None, created_at)
 
-    return jsonify({'message': 'Alarm note saved and printed!'}), 200
+    return jsonify({'message': 'OK'}), 200
 
 @app.route('/notes/add', methods=['POST'])
 def add_note_only():
