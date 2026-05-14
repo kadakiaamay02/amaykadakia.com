@@ -171,18 +171,20 @@ def init_db():
 
 init_db()
 
-def send_email(subject, body_html, to="amaykadakia+Alerts@gmail.com"):
+def send_email(subject, body_html, to="amaykadakia+alerts@gmail.com"):
     try:
-        email_content = f"""From: laezywork@gmail.com
-        To: {to}
-        Subject: {subject}
-        MIME-Version: 1.0
-        Content-Type: text/html; charset=utf-8
-
-        {body_html}"""
+        email_content = (
+            f"From: laezywork@gmail.com\r\n"
+            f"To: {to}\r\n"
+            f"Subject: {subject}\r\n"
+            f"MIME-Version: 1.0\r\n"
+            f"Content-Type: text/html; charset=utf-8\r\n"
+            f"\r\n"
+            f"{body_html}"
+        )
 
         result = subprocess.run(
-            ['msmtp', '--file=/home/laezy/.msmtprc', to],
+            ['msmtp', '--file=/home/laezy/.msmtprc', '-t'],
             input=email_content,
             capture_output=True,
             text=True
