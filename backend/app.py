@@ -52,95 +52,16 @@ def door_open_alert(device_mac, device_name, opened_time):
         unsnooze_url = f"{base_url}/unsnooze/{device_mac}"
 
         subject = f"⚠️ {device_name} left open for {DOOR_ALERT_MINS} mins - {datetime.now().strftime('%I:%M %p')}"
+        body_text = f"""{device_name} has been open for {DOOR_ALERT_MINS} minutes.
 
-        body_html = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            </head>
-            <body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,sans-serif;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:30px 0;">
-                <tr>
-                <td align="center">
-                    <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-                    
-                    <!-- Header -->
-                    <tr>
-                        <td style="background-color:#e74c3c;padding:30px;text-align:center;">
-                        <h1 style="color:#ffffff;margin:0;font-size:28px;">⚠️ Door Alert</h1>
-                        </td>
-                    </tr>
+        Opened: {opened_time}
 
-                    <!-- Body -->
-                    <tr>
-                        <td style="padding:30px;">
-                        <h2 style="color:#2c3e50;margin:0 0 10px 0;">{device_name}</h2>
-                        <p style="color:#666;font-size:16px;margin:0 0 20px 0;">
-                            This door has been open for <strong>{DOOR_ALERT_MINS} minutes</strong>. Please check it.
-                        </p>
-
-                        <!-- Info Box -->
-                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f9fa;border-radius:6px;padding:0;margin-bottom:30px;">
-                            <tr>
-                            <td style="padding:20px;">
-                                <p style="margin:0 0 8px 0;color:#555;font-size:14px;">
-                                🕐 <strong>Opened at:</strong> {opened_time}
-                                </p>
-                                <p style="margin:0;color:#555;font-size:14px;">
-                                ⏱️ <strong>Open for:</strong> {DOOR_ALERT_MINS} minutes
-                                </p>
-                            </td>
-                            </tr>
-                        </table>
-
-                        <!-- Action Buttons -->
-                        <p style="color:#2c3e50;font-size:16px;font-weight:bold;margin:0 0 15px 0;">Actions</p>
-                        
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                            <td style="padding-bottom:10px;">
-                                <a href="{snooze_1h}" style="display:block;background-color:#f39c12;color:#ffffff;text-decoration:none;padding:14px 20px;border-radius:6px;font-size:15px;text-align:center;font-weight:bold;">
-                                😴 Snooze for 1 Hour
-                                </a>
-                            </td>
-                            </tr>
-                            <tr>
-                            <td style="padding-bottom:10px;">
-                                <a href="{snooze_4h}" style="display:block;background-color:#e67e22;color:#ffffff;text-decoration:none;padding:14px 20px;border-radius:6px;font-size:15px;text-align:center;font-weight:bold;">
-                                😴 Snooze for 4 Hours
-                                </a>
-                            </td>
-                            </tr>
-                            <tr>
-                            <td>
-                                <a href="{unsnooze_url}" style="display:block;background-color:#27ae60;color:#ffffff;text-decoration:none;padding:14px 20px;border-radius:6px;font-size:15px;text-align:center;font-weight:bold;">
-                                ✅ Re-enable Alerts
-                                </a>
-                            </td>
-                            </tr>
-                        </table>
-                        </td>
-                    </tr>
-
-                    <!-- Footer -->
-                    <tr>
-                        <td style="background-color:#f8f9fa;padding:20px;text-align:center;border-top:1px solid #eee;">
-                        <p style="color:#aaa;font-size:12px;margin:0;">
-                            Sent from your Raspberry Pi • amaykadakia.com
-                        </p>
-                        </td>
-                    </tr>
-
-                    </table>
-                </td>
-                </tr>
-            </table>
-            </body>
-            </html>
-            """
-        send_email(subject, "", body_html)
+        Actions:
+        😴 Snooze 1 hour:  {snooze_1h}
+        😴 Snooze 4 hours: {snooze_4h}
+        ✅ Re-enable:      {unsnooze_url}
+        """
+        send_email(subject, body_text)
         print(f"Alert sent for {device_name}", flush=True)
 
         # Restart timer to alert again
@@ -171,21 +92,11 @@ def init_db():
 
 init_db()
 
-def send_email(subject, body_html, to="amaykadakia+alerts@gmail.com"):
+def send_email(subject, body_text, to="amaykadakia+alerts@gmail.com"):
     try:
-        email_content = (
-            f"From: laezywork@gmail.com\r\n"
-            f"To: {to}\r\n"
-            f"Subject: {subject}\r\n"
-            f"MIME-Version: 1.0\r\n"
-            f"Content-Type: text/html; charset=utf-8\r\n"
-            f"\r\n"
-            f"{body_html}"
-        )
-
         result = subprocess.run(
-            ['msmtp', '--file=/home/laezy/.msmtprc', '-t'],
-            input=email_content,
+            ['msmtp', '--file=/home/laezy/.msmtprc', to],
+            input=f"Subject: {subject}\n\n{body_text}",
             capture_output=True,
             text=True
         )
@@ -387,7 +298,7 @@ def unifi_webhook():
         timer.daemon = True
         timer.start()
         door_timers[device_mac] = timer
-        print(f"30 min timer started for {device_name}", flush=True)
+        print(f"{DOOR_ALERT_MINS} min timer started for {device_name}", flush=True)
 
     elif key == 'sensor_door_closed':
         # Cancel the timer since door closed
