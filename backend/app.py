@@ -4,6 +4,30 @@ import sqlite3
 import os
 from dotenv import load_dotenv
 from escpos.printer import Usb
+import time
+from datetime import datetime
+import subprocess
+
+def send_email(subject, body, to="amaykadakia@gmail.com"):
+    try:
+        result = subprocess.run(
+            ['msmtp', to],
+            input=f"Subject: {subject}\n\n{body}",
+            capture_output=True,
+            text=True
+        )
+        print(f"Email sent: {result.returncode}", flush=True)
+    except Exception as e:
+        print(f"Email error: {e}", flush=True)
+
+# Map device MAC to friendly name
+DEVICE_NAMES = {
+    '8CEDE1B2D4F8': 'Garage Door',
+    # add your other MACs here
+}
+
+# Track open doors: {device_mac: timestamp_when_opened}
+open_doors = {}
 
 load_dotenv()
 
@@ -168,14 +192,48 @@ def delete_note(note_id):
 
 @app.route('/webhook/unifi', methods=['POST'])
 def unifi_webhook():
-    data = request.get_json(silent=True)
+    data = request.get_json(silent=True) or {}
     print(f"UniFi webhook received: {data}", flush=True)
-    app.logger.info(f"UniFi webhook received: {data}")
 
-    name = data.get('name', 'UniFi Alert')
-    content = f"{name}"
+    alarm = data.get('alarm', {})
+    triggers = alarm.get('triggers', [])
 
-    print_unifi_alert(content)
+    if not triggers:
+        return jsonify({'message': 'OK'}), 200
+
+    key = triggers[0].get('key', '')
+    device_mac = triggers[0].get('device', '')
+    timestamp = triggers[0].get('timestamp', 0) / 1000  # convert ms to seconds
+    device_name = DEVICE_NAMES.get(device_mac, device_mac)
+
+    print(f"Device: {device_name} ({device_mac}), Event: {key}", flush=True)
+
+    if key == 'sensor_door_opened':
+        # Record when the door was opened
+        open_doors[device_mac] = {
+            'name': device_name,
+            'opened_at': timestamp
+        }
+        print(f"{device_name} opened at {datetime.fromtimestamp(timestamp)}", flush=True)
+
+    elif key == 'sensor_door_closed':
+        if device_mac in open_doors:
+            opened_at = open_doors[device_mac]['opened_at']
+            duration_mins = (timestamp - opened_at) / 60
+            print(f"{device_name} closed after {duration_mins:.1f} mins", flush=True)
+
+            if duration_mins >= 1:
+                opened_time = datetime.fromtimestamp(opened_at).strftime('%I:%M %p')
+                closed_time = datetime.fromtimestamp(timestamp).strftime('%I:%M %p')
+                subject = f"⚠️ {device_name} left open for {duration_mins:.0f} mins"
+                body = f"{device_name} was left open for {duration_mins:.0f} minutes.\n\nOpened: {opened_time}\nClosed: {closed_time}"
+                send_email(subject, body)
+                print_unifi_alert(body)
+
+            # Remove from tracking
+            del open_doors[device_mac]
+        else:
+            print(f"{device_name} closed but was not tracked as open", flush=True)
 
     return jsonify({'message': 'OK'}), 200
 
