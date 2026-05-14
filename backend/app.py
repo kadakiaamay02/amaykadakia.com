@@ -14,7 +14,7 @@ door_timers = {}
 # Track snoozed doors: {device_mac: snooze_until_timestamp}
 snoozed_doors = {}
 
-DOOR_ALERT_MINS=1
+DOOR_ALERT_MINS=10
 
 
 
@@ -100,7 +100,7 @@ def door_open_alert(device_mac, device_name, opened_time):
         door_timers[device_mac] = timer
 
 
-def send_email(subject, body_html, to="amaykadakia+alerts@gmail.com"):
+def send_email(subject, body_html, to="2400roundrock+alerts@gmail.com"):
     try:
         # Added Content-Type header to tell the email client to render HTML
         email_content = f"Subject: {subject}\nContent-Type: text/html; charset=utf-8\n\n{body_html}"
