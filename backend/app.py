@@ -16,13 +16,15 @@ snoozed_doors = {}
 
 DOOR_ALERT_MINS=10
 
-
-
 # Map device MAC to friendly name
 DEVICE_NAMES = {
     '8CEDE1B2D4F8': 'Garage Door',
     '8CEDE1B2CE32': 'Front Door',
-    '8CEDE1B2DC68': 'Patio Door'
+    '8CEDE1B2DC68': 'Patio Door',
+    '8CEDE1B2D4FB': 'Garage Door 2',
+    '8CEDE1B2DAC2': 'Garage Door 1',
+    '8CEDE1B2DCB4': 'Left Backyard Door',
+    '8CEDE1B2D654': 'Right Backyard Door'
     # add your other MACs here
 }
 
