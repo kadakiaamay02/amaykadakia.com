@@ -146,20 +146,8 @@ def delete_note(note_id):
 def unifi_webhook():
     # Handle empty body or any format UniFi sends
     data = request.get_json(silent=True) or request.form.to_dict() or {}
-    
-    content = "🚨 UniFi Alert - Door Sensor Triggered"
-
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute('INSERT INTO notes (content, due_date) VALUES (?, ?)', (content, None))
-    conn.commit()
-    new_id = c.lastrowid
-    c.execute('SELECT created_at FROM notes WHERE id = ?', (new_id,))
-    created_at = c.fetchone()['created_at']
-    conn.close()
-
-    print_to_printer(content, None, created_at)
+    content = "UniFi Alert - Door Sensor Triggered"
+    print_to_printer(content, None, None)
 
     return jsonify({'message': 'OK'}), 200
 
