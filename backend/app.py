@@ -177,6 +177,7 @@ def delete_note(note_id):
 def unifi_webhook():
     # Handle empty body or any format UniFi sends
     data = request.get_json(silent=True) or request.form.to_dict() or {}
+    print(f"Received UniFi webhook: {data}")
     content = "UniFi Alert - Door Sensor Triggered"
     print_to_printer(content, None, None)
 
