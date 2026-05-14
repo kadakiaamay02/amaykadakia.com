@@ -202,8 +202,10 @@ def unifi_webhook():
     # Handle empty body or any format UniFi sends
     data = request.get_json(silent=True) or request.form.to_dict() or {}
     conditions = data.get('conditions', [])
+    sources = [c.get('condition', {}).get('source', '') for c in conditions]
     content = "UniFi Alert - Door Sensor Triggered"
-    print_to_printer(conditions, None, None)
+    print_unifi_alert(conditions.count())
+    print_unifi_alert(sources)
 
     return jsonify({'message': 'OK'}), 200
 
