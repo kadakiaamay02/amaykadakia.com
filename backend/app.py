@@ -7,7 +7,18 @@ from escpos.printer import Usb
 import time
 from datetime import datetime
 import subprocess
+import threading
 
+# Store timers so we can cancel them if door closes
+door_timers = {}
+
+def door_open_alert(device_mac, device_name, opened_time):
+    """Called after 30 mins if door is still open"""
+    if device_mac in open_doors:  # still open
+        subject = f"⚠️ {device_name} left open for 30 mins"
+        body = f"{device_name} has been open for 30 minutes.\n\nOpened: {opened_time}\n\nPlease check the door."
+        send_email(subject, body)
+        print(f"Alert sent: {device_name} still open after 30 mins", flush=True)
 
 
 # Map device MAC to friendly name
@@ -205,40 +216,45 @@ def unifi_webhook():
 
     key = triggers[0].get('key', '')
     device_mac = triggers[0].get('device', '')
-    timestamp = triggers[0].get('timestamp', 0) / 1000  # convert ms to seconds
+    timestamp = triggers[0].get('timestamp', 0) / 1000
     device_name = DEVICE_NAMES.get(device_mac, device_mac)
 
     print(f"Device: {device_name} ({device_mac}), Event: {key}", flush=True)
 
     if key == 'sensor_door_opened':
-        # Record when the door was opened
+        opened_time = datetime.fromtimestamp(timestamp).strftime('%I:%M %p')
+
+        # Track open door
         open_doors[device_mac] = {
             'name': device_name,
             'opened_at': timestamp
         }
-        print(f"{device_name} opened at {datetime.fromtimestamp(timestamp)}", flush=True)
+        print(f"{device_name} opened at {opened_time}", flush=True)
+
+        # Cancel any existing timer for this door
+        if device_mac in door_timers:
+            door_timers[device_mac].cancel()
+
+        # Start 30 min timer
+        timer = threading.Timer(1 * 60, door_open_alert, args=[device_mac, device_name, opened_time])
+        timer.daemon = True
+        timer.start()
+        door_timers[device_mac] = timer
+        print(f"30 min timer started for {device_name}", flush=True)
 
     elif key == 'sensor_door_closed':
+        # Cancel the timer since door closed
+        if device_mac in door_timers:
+            door_timers[device_mac].cancel()
+            del door_timers[device_mac]
+            print(f"Timer cancelled for {device_name} - door closed", flush=True)
+
         if device_mac in open_doors:
-            opened_at = open_doors[device_mac]['opened_at']
-            duration_mins = (timestamp - opened_at) / 60
-            print(f"{device_name} closed after {duration_mins:.1f} mins", flush=True)
-
-            if duration_mins >= 1:
-                opened_time = datetime.fromtimestamp(opened_at).strftime('%I:%M %p')
-                closed_time = datetime.fromtimestamp(timestamp).strftime('%I:%M %p')
-                subject = f"⚠️ {device_name} left open for {duration_mins:.0f} mins"
-                body = f"{device_name} was left open for {duration_mins:.0f} minutes.\n\nOpened: {opened_time}\nClosed: {closed_time}"
-                send_email(subject, body)
-                print_unifi_alert(body)
-
-            # Remove from tracking
             del open_doors[device_mac]
-        else:
-            print(f"{device_name} closed but was not tracked as open", flush=True)
+
+        print(f"{device_name} closed", flush=True)
 
     return jsonify({'message': 'OK'}), 200
-
 
 @app.route('/notes/add', methods=['POST'])
 def add_note_only():
