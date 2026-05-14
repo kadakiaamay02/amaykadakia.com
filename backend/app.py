@@ -23,7 +23,8 @@ DOOR_ALERT_MINS=1
 # Map device MAC to friendly name
 DEVICE_NAMES = {
     '8CEDE1B2D4F8': 'Garage Door',
-    '8CEDE1B2CE32': 'Patio Door'
+    '8CEDE1B2CE32': 'Front Door',
+    '8CEDE1B2DC68': 'Patio Door'
     # add your other MACs here
 }
 
@@ -63,16 +64,40 @@ def door_open_alert(device_mac, device_name, opened_time):
         unsnooze_url = f"{base_url}/unsnooze/{device_mac}"
 
         subject = f"⚠️ {device_name} left open for {DOOR_ALERT_MINS} mins - {datetime.now().strftime('%I:%M %p')}"
-        body_text = f"""{device_name} has been open for {DOOR_ALERT_MINS} minutes.
-
-        Opened: {opened_time}
-
-        Actions:
-        😴 Snooze 1 hour:  {snooze_1h}
-        😴 Snooze 4 hours: {snooze_4h}
-        ✅ Re-enable:      {unsnooze_url}
+        
+        # Build an HTML email body instead of plain text
+        body_html = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+            <h2 style="color: #d9534f; margin-bottom: 5px;">⚠️ {device_name} is Open</h2>
+            <p style="font-size: 16px;">
+                <strong>{device_name}</strong> has been left open for <strong>{DOOR_ALERT_MINS} minutes</strong>.
+            </p>
+            <p style="font-size: 14px; color: #666;">
+                <strong>Opened at:</strong> {opened_time}
+            </p>
+            
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            
+            <h3 style="margin-bottom: 15px;">Quick Actions:</h3>
+            <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td style="padding-right: 10px;">
+                        <a href="{snooze_1h}" style="background-color: #f0ad4e; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">😴 Snooze 1h</a>
+                    </td>
+                    <td style="padding-right: 10px;">
+                        <a href="{snooze_4h}" style="background-color: #f0ad4e; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">😴 Snooze 4h</a>
+                    </td>
+                    <td>
+                        <a href="{unsnooze_url}" style="background-color: #5cb85c; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">✅ Re-enable</a>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
         """
-        send_email(subject, body_text)
+        
+        send_email(subject, body_html)
         print(f"Alert sent for {device_name}", flush=True)
 
         # Restart timer to alert again
@@ -84,6 +109,22 @@ def door_open_alert(device_mac, device_name, opened_time):
         timer.daemon = True
         timer.start()
         door_timers[device_mac] = timer
+
+
+def send_email(subject, body_html, to="amaykadakia+alerts@gmail.com"):
+    try:
+        # Added Content-Type header to tell the email client to render HTML
+        email_content = f"Subject: {subject}\nContent-Type: text/html; charset=utf-8\n\n{body_html}"
+        
+        result = subprocess.run(
+            ['msmtp', '--file=/home/laezy/.msmtprc', to],
+            input=email_content,
+            capture_output=True,
+            text=True
+        )
+        print(f"Email sent: {result.returncode}, stderr: {result.stderr}", flush=True)
+    except Exception as e:
+        print(f"Email error: {e}", flush=True)
 
 def init_db():
     conn = sqlite3.connect(DATABASE)
@@ -102,18 +143,6 @@ def init_db():
     conn.close()
 
 init_db()
-
-def send_email(subject, body_text, to="amaykadakia+alerts@gmail.com"):
-    try:
-        result = subprocess.run(
-            ['msmtp', '--file=/home/laezy/.msmtprc', to],
-            input=f"Subject: {subject}\n\n{body_text}",
-            capture_output=True,
-            text=True
-        )
-        print(f"Email sent: {result.returncode}, stderr: {result.stderr}", flush=True)
-    except Exception as e:
-        print(f"Email error: {e}", flush=True)
 
 def print_to_printer(content, due_date=None, created_at=None):
     p = None
