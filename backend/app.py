@@ -171,7 +171,7 @@ def init_db():
 
 init_db()
 
-def send_email(subject, body_text, body_html, to="2400roundrock+Alerts@gmail.com"):
+def send_email(subject, body_html, to="amaykadakia+Alerts@gmail.com"):
     try:
         email_content = f"""From: laezywork@gmail.com
         To: {to}
