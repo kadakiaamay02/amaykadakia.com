@@ -23,6 +23,7 @@ DOOR_ALERT_MINS=1
 # Map device MAC to friendly name
 DEVICE_NAMES = {
     '8CEDE1B2D4F8': 'Garage Door',
+    '8CEDE1B2CE32': 'Patio Door'
     # add your other MACs here
 }
 
@@ -49,7 +50,6 @@ DATABASE = 'wine_list.db'
 
 def door_open_alert(device_mac, device_name, opened_time):
     if device_mac in open_doors:
-        # Check if snoozed
         if device_mac in snoozed_doors:
             if time.time() < snoozed_doors[device_mac]:
                 print(f"{device_name} alert suppressed - snoozed", flush=True)
@@ -60,22 +60,101 @@ def door_open_alert(device_mac, device_name, opened_time):
         base_url = "https://amaypy.duckdns.org"
         snooze_1h = f"{base_url}/snooze/{device_mac}?mins=60"
         snooze_4h = f"{base_url}/snooze/{device_mac}?mins=240"
-        unsnooze = f"{base_url}/unsnooze/{device_mac}"
+        unsnooze_url = f"{base_url}/unsnooze/{device_mac}"
 
-        subject = f"⚠️ {device_name} left open for {DOOR_ALERT_MINS} mins"
-        body = f"""{device_name} has been open for {DOOR_ALERT_MINS} minutes.
+        subject = f"⚠️ {device_name} left open for {DOOR_ALERT_MINS} mins - {datetime.now().strftime('%I:%M %p')}"
 
-            Opened: {opened_time}
+        body_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:30px 0;">
+                <tr>
+                <td align="center">
+                    <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color:#e74c3c;padding:30px;text-align:center;">
+                        <h1 style="color:#ffffff;margin:0;font-size:28px;">⚠️ Door Alert</h1>
+                        </td>
+                    </tr>
 
-            Actions:
-            - Snooze alerts for 1 hour: {snooze_1h}
-            - Snooze alerts for 4 hours: {snooze_4h}
-            - Re-enable alerts: {unsnooze}
-        """
-        send_email(subject, body)
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding:30px;">
+                        <h2 style="color:#2c3e50;margin:0 0 10px 0;">{device_name}</h2>
+                        <p style="color:#666;font-size:16px;margin:0 0 20px 0;">
+                            This door has been open for <strong>{DOOR_ALERT_MINS} minutes</strong>. Please check it.
+                        </p>
+
+                        <!-- Info Box -->
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f9fa;border-radius:6px;padding:0;margin-bottom:30px;">
+                            <tr>
+                            <td style="padding:20px;">
+                                <p style="margin:0 0 8px 0;color:#555;font-size:14px;">
+                                🕐 <strong>Opened at:</strong> {opened_time}
+                                </p>
+                                <p style="margin:0;color:#555;font-size:14px;">
+                                ⏱️ <strong>Open for:</strong> {DOOR_ALERT_MINS} minutes
+                                </p>
+                            </td>
+                            </tr>
+                        </table>
+
+                        <!-- Action Buttons -->
+                        <p style="color:#2c3e50;font-size:16px;font-weight:bold;margin:0 0 15px 0;">Actions</p>
+                        
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                            <td style="padding-bottom:10px;">
+                                <a href="{snooze_1h}" style="display:block;background-color:#f39c12;color:#ffffff;text-decoration:none;padding:14px 20px;border-radius:6px;font-size:15px;text-align:center;font-weight:bold;">
+                                😴 Snooze for 1 Hour
+                                </a>
+                            </td>
+                            </tr>
+                            <tr>
+                            <td style="padding-bottom:10px;">
+                                <a href="{snooze_4h}" style="display:block;background-color:#e67e22;color:#ffffff;text-decoration:none;padding:14px 20px;border-radius:6px;font-size:15px;text-align:center;font-weight:bold;">
+                                😴 Snooze for 4 Hours
+                                </a>
+                            </td>
+                            </tr>
+                            <tr>
+                            <td>
+                                <a href="{unsnooze_url}" style="display:block;background-color:#27ae60;color:#ffffff;text-decoration:none;padding:14px 20px;border-radius:6px;font-size:15px;text-align:center;font-weight:bold;">
+                                ✅ Re-enable Alerts
+                                </a>
+                            </td>
+                            </tr>
+                        </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color:#f8f9fa;padding:20px;text-align:center;border-top:1px solid #eee;">
+                        <p style="color:#aaa;font-size:12px;margin:0;">
+                            Sent from your Raspberry Pi • amaykadakia.com
+                        </p>
+                        </td>
+                    </tr>
+
+                    </table>
+                </td>
+                </tr>
+            </table>
+            </body>
+            </html>
+            """
+        send_email(subject, "", body_html)
         print(f"Alert sent for {device_name}", flush=True)
 
-        # Restart timer to alert again in 30 mins if still open
+        # Restart timer to alert again
         timer = threading.Timer(
             DOOR_ALERT_MINS * 60,
             door_open_alert,
@@ -84,7 +163,6 @@ def door_open_alert(device_mac, device_name, opened_time):
         timer.daemon = True
         timer.start()
         door_timers[device_mac] = timer
-
 
 def init_db():
     conn = sqlite3.connect(DATABASE)
@@ -104,15 +182,23 @@ def init_db():
 
 init_db()
 
-def send_email(subject, body, to="2400roundrock+alerts@gmail.com"):
+def send_email(subject, body_text, body_html, to="2400roundrock+Alerts@gmail.com"):
     try:
+        email_content = f"""From: laezywork@gmail.com
+        To: {to}
+        Subject: {subject}
+        MIME-Version: 1.0
+        Content-Type: text/html; charset=utf-8
+
+        {body_html}"""
+
         result = subprocess.run(
             ['msmtp', '--file=/home/laezy/.msmtprc', to],
-            input=f"Subject: {subject}\n\n{body}",
+            input=email_content,
             capture_output=True,
             text=True
         )
-        print(f"Email sent: {result.returncode}, stdout: {result.stdout}, stderr: {result.stderr}", flush=True)
+        print(f"Email sent: {result.returncode}, stderr: {result.stderr}", flush=True)
     except Exception as e:
         print(f"Email error: {e}", flush=True)
 
