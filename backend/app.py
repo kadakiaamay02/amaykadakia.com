@@ -10,17 +10,7 @@ import time
 from datetime import datetime
 import subprocess
 
-def send_email(subject, body, to="amaykadakia@gmail.com"):
-    try:
-        result = subprocess.run(
-            ['msmtp', to],
-            input=f"Subject: {subject}\n\n{body}",
-            capture_output=True,
-            text=True
-        )
-        print(f"Email sent: {result.returncode}", flush=True)
-    except Exception as e:
-        print(f"Email error: {e}", flush=True)
+
 
 # Map device MAC to friendly name
 DEVICE_NAMES = {
@@ -66,6 +56,18 @@ def init_db():
     conn.close()
 
 init_db()
+
+def send_email(subject, body, to="amaykadakia@gmail.com"):
+    try:
+        result = subprocess.run(
+            ['msmtp', '--file=/home/laezy/.msmtprc', to],
+            input=f"Subject: {subject}\n\n{body}",
+            capture_output=True,
+            text=True
+        )
+        print(f"Email sent: {result.returncode}, stdout: {result.stdout}, stderr: {result.stderr}", flush=True)
+    except Exception as e:
+        print(f"Email error: {e}", flush=True)
 
 def print_to_printer(content, due_date=None, created_at=None):
     p = None
