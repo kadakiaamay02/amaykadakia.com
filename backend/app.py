@@ -173,6 +173,30 @@ def delete_note(note_id):
     conn.close()
     return jsonify({'message': 'Note deleted!'}), 200
 
+@app.route('/webhook/unifi', methods=['POST'])
+def unifi_webhook():
+    # UniFi can send JSON or form data
+    data = request.get_json(silent=True) or request.form.to_dict()
+    
+    # Build a note from whatever UniFi sends
+    event_type = data.get('event', data.get('type', 'Motion Detected'))
+    camera = data.get('camera', data.get('device', 'Unknown Camera'))
+    content = f"🚨 {event_type} - {camera}"
+
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('INSERT INTO notes (content, due_date) VALUES (?, ?)', (content, None))
+    conn.commit()
+    new_id = c.lastrowid
+    c.execute('SELECT created_at FROM notes WHERE id = ?', (new_id,))
+    created_at = c.fetchone()['created_at']
+    conn.close()
+
+    print_to_printer(content, None, created_at)
+
+    return jsonify({'message': 'Alarm note saved and printed!'}), 200
+
 @app.route('/notes/add', methods=['POST'])
 def add_note_only():
     data = request.get_json(silent=True) or {}
