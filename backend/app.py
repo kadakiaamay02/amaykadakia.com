@@ -11,14 +11,11 @@ import threading
 
 # Store timers so we can cancel them if door closes
 door_timers = {}
+# Track snoozed doors: {device_mac: snooze_until_timestamp}
+snoozed_doors = {}
 
-def door_open_alert(device_mac, device_name, opened_time):
-    """Called after 30 mins if door is still open"""
-    if device_mac in open_doors:  # still open
-        subject = f"⚠️ {device_name} left open for 30 mins"
-        body = f"{device_name} has been open for 30 minutes.\n\nOpened: {opened_time}\n\nPlease check the door."
-        send_email(subject, body)
-        print(f"Alert sent: {device_name} still open after 30 mins", flush=True)
+DOOR_ALERT_MINS=1
+
 
 
 # Map device MAC to friendly name
@@ -39,6 +36,45 @@ CORS(app)
 
 DATABASE = 'wine_list.db'
 
+def door_open_alert(device_mac, device_name, opened_time):
+    if device_mac in open_doors:
+        # Check if snoozed
+        if device_mac in snoozed_doors:
+            if time.time() < snoozed_doors[device_mac]:
+                print(f"{device_name} alert suppressed - snoozed", flush=True)
+                return
+            else:
+                del snoozed_doors[device_mac]
+
+        base_url = "https://amaypy.duckdns.org"
+        snooze_1h = f"{base_url}/snooze/{device_mac}?mins=60"
+        snooze_4h = f"{base_url}/snooze/{device_mac}?mins=240"
+        unsnooze = f"{base_url}/unsnooze/{device_mac}"
+
+        subject = f"⚠️ {device_name} left open for {DOOR_ALERT_MINS} mins"
+        body = f"""{device_name} has been open for {DOOR_ALERT_MINS} minutes.
+
+            Opened: {opened_time}
+
+            Actions:
+            - Snooze alerts for 1 hour: {snooze_1h}
+            - Snooze alerts for 4 hours: {snooze_4h}
+            - Re-enable alerts: {unsnooze}
+        """
+        send_email(subject, body)
+        print(f"Alert sent for {device_name}", flush=True)
+
+        # Restart timer to alert again in 30 mins if still open
+        timer = threading.Timer(
+            DOOR_ALERT_MINS * 60,
+            door_open_alert,
+            args=[device_mac, device_name, opened_time]
+        )
+        timer.daemon = True
+        timer.start()
+        door_timers[device_mac] = timer
+
+
 def init_db():
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
@@ -57,7 +93,7 @@ def init_db():
 
 init_db()
 
-def send_email(subject, body, to="amaykadakia@gmail.com"):
+def send_email(subject, body, to="2400roundrock+alerts@gmail.com"):
     try:
         result = subprocess.run(
             ['msmtp', '--file=/home/laezy/.msmtprc', to],
@@ -203,6 +239,25 @@ def delete_note(note_id):
     conn.close()
     return jsonify({'message': 'Note deleted!'}), 200
 
+
+
+@app.route('/snooze/<device_mac>', methods=['GET'])
+def snooze_door(device_mac):
+    snooze_mins = int(request.args.get('mins', 60))
+    snooze_until = time.time() + (snooze_mins * 60)
+    snoozed_doors[device_mac] = snooze_until
+    device_name = DEVICE_NAMES.get(device_mac, device_mac)
+    print(f"{device_name} snoozed for {snooze_mins} mins", flush=True)
+    return f"<h2>✅ {device_name} alerts snoozed for {snooze_mins} minutes.</h2>", 200
+
+@app.route('/unsnooze/<device_mac>', methods=['GET'])
+def unsnooze_door(device_mac):
+    if device_mac in snoozed_doors:
+        del snoozed_doors[device_mac]
+    device_name = DEVICE_NAMES.get(device_mac, device_mac)
+    print(f"{device_name} unsnoozed", flush=True)
+    return f"<h2>✅ {device_name} alerts re-enabled.</h2>", 200
+
 @app.route('/webhook/unifi', methods=['POST'])
 def unifi_webhook():
     data = request.get_json(silent=True) or {}
@@ -223,20 +278,24 @@ def unifi_webhook():
 
     if key == 'sensor_door_opened':
         opened_time = datetime.fromtimestamp(timestamp).strftime('%I:%M %p')
-
-        # Track open door
         open_doors[device_mac] = {
             'name': device_name,
             'opened_at': timestamp
         }
-        print(f"{device_name} opened at {opened_time}", flush=True)
 
-        # Cancel any existing timer for this door
+        # Don't start timer if snoozed
+        if device_mac in snoozed_doors and time.time() < snoozed_doors[device_mac]:
+            print(f"{device_name} opened but alerts are snoozed", flush=True)
+            return jsonify({'message': 'OK'}), 200
+
         if device_mac in door_timers:
             door_timers[device_mac].cancel()
 
-        # Start 30 min timer
-        timer = threading.Timer(1 * 60, door_open_alert, args=[device_mac, device_name, opened_time])
+        timer = threading.Timer(
+            DOOR_ALERT_MINS * 60,
+            door_open_alert,
+            args=[device_mac, device_name, opened_time]
+        )
         timer.daemon = True
         timer.start()
         door_timers[device_mac] = timer
