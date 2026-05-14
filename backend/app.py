@@ -168,22 +168,14 @@ def delete_note(note_id):
 
 @app.route('/webhook/unifi', methods=['POST'])
 def unifi_webhook():
-    data = request.get_json(silent=True) or request.form.to_dict() or {}
+    data = request.get_json(silent=True)
+    print(f"UniFi webhook received: {data}", flush=True)
     app.logger.info(f"UniFi webhook received: {data}")
 
-    conditions = data.get('conditions', [])
-    sources = [c.get('condition', {}).get('source', '') for c in conditions]
-    app.logger.info(f"Sources: {sources}")
+    name = data.get('name', 'UniFi Alert')
+    content = f"{name}"
 
-    # Determine event type
-    if 'sensor_door_opened' in sources:
-        content = 'Door Opened'
-    elif 'sensor_door_closed' in sources:
-        content = 'Door Closed'
-    else:
-        content = f"UniFi Alert - {data.get('name', 'Unknown Event')}"
-
-    print_to_printer(content)
+    print_unifi_alert(content)
 
     return jsonify({'message': 'OK'}), 200
 
