@@ -69,7 +69,26 @@ export class NotesComponent implements OnInit {
     });
   }
 
-    addNote(): void {
+  print(): void {   
+     if (!this.newNote.trim()) return;
+
+    this.http.post<{ id: number, message: string }>(`${this.apiUrl}/print`, {
+      content: this.newNote,
+      due_date: this.newDueDate || null
+    }).subscribe({
+      next: () => {
+        this.success = 'Note printed!';
+        this.newNote = '';
+        this.newDueDate = '';
+        this.loadNotes();
+        setTimeout(() => this.success = '', 3000);
+      },
+      error: () => this.error = 'Failed to add note.'
+
+    });
+  }
+
+  addNote(): void {
     if (!this.newNote.trim()) return;
 
     this.http.post<{ id: number, message: string }>(`${this.apiUrl}/add`, {
