@@ -40,6 +40,11 @@
               "css/vendor.css"
             ],
             "scripts": [],
+            "allowedCommonJsDependencies": [
+              "pdfmake",
+              "pdfmake/build/pdfmake",
+              "pdfmake/build/vfs_fonts"
+            ],
             "vendorChunk": true
           },
           "configurations": {
