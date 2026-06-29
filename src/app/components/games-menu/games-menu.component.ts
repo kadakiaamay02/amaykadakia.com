@@ -3,11 +3,10 @@ import { RouterLink } from '@angular/router';
 
 
 @Component({
-  selector: 'app-games-menu',
-  standalone: true,
-  imports: [RouterLink],
-  templateUrl: './games-menu.component.html',
-  styleUrls: ['./games-menu.component.scss']
+    selector: 'app-games-menu',
+    imports: [RouterLink],
+    templateUrl: './games-menu.component.html',
+    styleUrls: ['./games-menu.component.scss']
 })
 export class GamesMenuComponent {
 

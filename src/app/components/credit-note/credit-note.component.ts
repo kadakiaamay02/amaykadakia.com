@@ -38,11 +38,10 @@ interface CreditNoteModel {
 }
 
 @Component({
-  selector: 'app-credit-note',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './credit-note.component.html',
-  styleUrl: './credit-note.component.scss',
+    selector: 'app-credit-note',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './credit-note.component.html',
+    styleUrl: './credit-note.component.scss'
 })
 export class CreditNoteComponent {
   readonly months = MONTHS;
@@ -123,7 +122,7 @@ export class CreditNoteComponent {
     return {
       pageSize: 'A4',
       pageMargins: [55, 45, 55, 55],
-      defaultStyle: { fontSize: 11, color: '#000', lineHeight: 1.15 },
+      defaultStyle: { fontSize: 11, color: '#000', lineHeight: 1.15, font: 'Times New Roman' },
       content: [
         // Letterhead (sender — fixed)
         { text: 'Cosmos Trading Corporation', alignment: 'center', bold: true, fontSize: 24, color: NAVY },

@@ -3,19 +3,16 @@ import { SortingServiceService } from '@app/services/s/sorting-service.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WineService } from '@app/services/s/wine-service.service';
-import { HttpClientModule } from '@angular/common/http';
-
 export interface Wine {
   name: string;
   rating: number;
   notes: string;
 }
 @Component({
-  selector: 'app-wine-list',
-  standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
-  templateUrl: './wine-list.component.html',
-  styleUrl: './wine-list.component.scss'
+    selector: 'app-wine-list',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './wine-list.component.html',
+    styleUrl: './wine-list.component.scss'
 })
 export class WineListComponent {
   wines: Wine[] = [];

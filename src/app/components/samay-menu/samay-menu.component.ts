@@ -4,11 +4,10 @@ import { CommonModule } from '@angular/common';
 import { SamayLoginService } from '../../services/samay-login.service';
 import { RouterLink } from '@angular/router';
 @Component({
-  selector: 'app-samay-menu',
-  standalone: true,
-  imports: [FormsModule, CommonModule, RouterLink],
-  templateUrl: './samay-menu.component.html',
-  styleUrl: './samay-menu.component.scss'
+    selector: 'app-samay-menu',
+    imports: [FormsModule, CommonModule, RouterLink],
+    templateUrl: './samay-menu.component.html',
+    styleUrl: './samay-menu.component.scss'
 })
 export class SamayMenuComponent implements OnInit {
   showMenu = false;
