@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Portfolio } from '../../services/modal.service';
 
 @Component({
-  selector: 'app-portfolio-grid',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-portfolio-grid',
+    imports: [CommonModule],
+    template: `
     <div class="portfolio-grid">
       <div class="portfolio-card" *ngFor="let project of projects; let i = index">
         <div class="portfolio-card__header" (click)="toggleProject(i)">
@@ -47,7 +46,7 @@ import { Portfolio } from '../../services/modal.service';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .portfolio-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
