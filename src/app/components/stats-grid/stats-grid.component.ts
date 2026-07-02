@@ -8,9 +8,10 @@ interface StatItem {
 }
 
 @Component({
-    selector: 'app-stats-grid',
-    imports: [CommonModule],
-    template: `
+  selector: 'app-stats-grid',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div class="stats-grid">
       <div class="stats-card" *ngFor="let stat of stats">
         <a [href]="stat.link" target="_blank" class="stats-card__link">
@@ -27,7 +28,7 @@ interface StatItem {
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
