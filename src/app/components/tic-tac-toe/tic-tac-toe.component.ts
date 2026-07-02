@@ -3,10 +3,11 @@ import { FlashService } from '@app/services/flash.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-tic-tac-toe',
-    imports: [CommonModule],
-    templateUrl: './tic-tac-toe.component.html',
-    styleUrl: './tic-tac-toe.component.scss'
+  selector: 'app-tic-tac-toe',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './tic-tac-toe.component.html',
+  styleUrl: './tic-tac-toe.component.scss'
 })
 
 export class TicTacToeComponent {

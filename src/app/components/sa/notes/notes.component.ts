@@ -12,10 +12,11 @@ interface Note {
 }
 
 @Component({
-    selector: 'app-notes',
-    imports: [CommonModule, FormsModule],
-    templateUrl: './notes.component.html',
-    styleUrl: './notes.component.scss'
+  selector: 'app-notes',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './notes.component.html',
+  styleUrl: './notes.component.scss'
 })
 export class NotesComponent implements OnInit {
   notes: Note[] = [];
