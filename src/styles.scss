@@ -5146,3 +5146,520 @@ button.swiper-pagination-bullet {
     transform : scale(1);
     opacity   : 1;
 }
+
+
+
+/* ===================================================================
+ * # MODERN REDESIGN OVERRIDES
+ * Layered on top of existing styles — keeps all CSS variables intact.
+ * ------------------------------------------------------------------- */
+
+/* --- App-level nav brand item --- */
+.app-nav__brand {
+    flex: 1 1 auto !important;
+    border-right: none !important;
+}
+
+.app-nav__brand a {
+    font-family    : var(--font-2) !important;
+    font-size      : 1.8rem !important;
+    letter-spacing : 0.02em !important;
+    text-transform : none !important;
+    color          : var(--color-white) !important;
+    padding-left   : 2.4rem !important;
+}
+
+.app-nav__brand a:hover {
+    color : var(--color-1) !important;
+}
+
+/* --- Design tokens additions --- */
+:root {
+    --border-radius         : 12px;
+    --border-radius-sm      : 8px;
+    --border-radius-lg      : 20px;
+    --border-radius-pill    : 100px;
+    --color-glass-bg        : rgba(20, 21, 22, 0.6);
+    --color-glass-border    : rgba(255, 255, 255, 0.07);
+    --color-accent-glow     : rgba(234, 190, 124, 0.15);
+    --shadow-card           : 0 4px 24px rgba(0, 0, 0, 0.35), 0 1px 4px rgba(0, 0, 0, 0.2);
+    --shadow-hover          : 0 12px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(234, 190, 124, 0.12);
+    --transition-smooth     : all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* -------------------------------------------------------------------
+ * ## Header: frosted glass
+ * ------------------------------------------------------------------- */
+.s-header {
+    background    : rgba(20, 21, 22, 0.72);
+    backdrop-filter : blur(24px);
+    -webkit-backdrop-filter : blur(24px);
+    border-bottom : 1px solid rgba(234, 190, 124, 0.07);
+    box-shadow    : 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.header-mobile {
+    background : rgba(20, 21, 22, 0.92) !important;
+    backdrop-filter : blur(24px);
+    -webkit-backdrop-filter : blur(24px);
+    border-bottom : 1px solid rgba(234, 190, 124, 0.08) !important;
+}
+
+.main-nav ul {
+    background-color : transparent !important;
+    border           : none !important;
+    justify-content  : flex-end;
+}
+
+.main-nav li {
+    flex         : 0 0 auto !important;
+    border-right : none !important;
+}
+
+.main-nav a {
+    padding        : 0 1.8rem !important;
+    font-size      : 10px;
+    letter-spacing : 0.28em;
+    color          : rgba(255, 255, 255, 0.75) !important;
+    transition     : color 0.2s ease !important;
+    border-bottom  : 2px solid transparent;
+}
+
+.main-nav a:hover,
+.main-nav a:focus {
+    color        : var(--color-1) !important;
+    border-bottom-color : transparent;
+}
+
+.main-nav .current a,
+.main-nav li a.current {
+    color            : var(--color-1) !important;
+    background-color : transparent !important;
+}
+
+/* -------------------------------------------------------------------
+ * ## Hero: gradient background + gradient text
+ * ------------------------------------------------------------------- */
+.s-intro {
+    background :
+        radial-gradient(ellipse 65% 65% at 10% 55%, rgba(35, 150, 127, 0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 55% 50% at 90% 25%, rgba(234, 190, 124, 0.07) 0%, transparent 70%);
+}
+
+.text-huge-title {
+    background              : linear-gradient(145deg, #ffffff 45%, var(--color-1) 100%);
+    -webkit-background-clip : text;
+    -webkit-text-fill-color : transparent;
+    background-clip         : text;
+    padding-bottom          : 0.08em;
+}
+
+.text-pretitle {
+    font-size      : 1.1rem;
+    letter-spacing : 0.42em;
+}
+
+/* Scroll-down bounce animation */
+.intro-scrolldown {
+    border        : 1px solid rgba(255, 255, 255, 0.12);
+    border-radius : 50%;
+    width         : 5rem;
+    height        : 5rem;
+    animation     : scrollBounce 2.2s ease-in-out infinite;
+}
+
+@keyframes scrollBounce {
+    0%, 100% { transform: translateY(0); opacity: 1; }
+    50%       { transform: translateY(10px); opacity: 0.6; }
+}
+
+.intro-scrolldown svg {
+    height : 2rem !important;
+    width  : 2rem !important;
+}
+
+/* Social links: subtle pill borders */
+.intro-social a {
+    border        : 1px solid rgba(255, 255, 255, 0.12);
+    border-radius : var(--border-radius-pill);
+    padding       : 0.3rem 1.2rem;
+    transition    : var(--transition-smooth);
+}
+
+.intro-social a:hover,
+.intro-social a:focus {
+    background    : rgba(234, 190, 124, 0.08);
+    border-color  : rgba(234, 190, 124, 0.4);
+    color         : var(--color-1) !important;
+    transform     : translateY(-2px);
+}
+
+/* -------------------------------------------------------------------
+ * ## About: info card glass
+ * ------------------------------------------------------------------- */
+.about-info__text {
+    background    : rgba(255, 255, 255, 0.025) !important;
+    border        : 1px solid var(--color-glass-border) !important;
+    border-radius : var(--border-radius-lg) !important;
+    padding       : var(--vspace-2_5) var(--vspace-2) var(--vspace-2) !important;
+    margin-left   : 0 !important;
+    backdrop-filter : blur(8px);
+    box-shadow    : var(--shadow-card);
+}
+
+/* Resume button: outlined pill */
+.about-info__text .btn {
+    border-radius  : var(--border-radius-pill) !important;
+    background     : transparent !important;
+    border         : 1px solid rgba(234, 190, 124, 0.5) !important;
+    color          : var(--color-1) !important;
+    letter-spacing : 0.15em;
+    font-size      : var(--text-xs);
+    transition     : var(--transition-smooth) !important;
+    padding-left   : 3.2rem !important;
+    padding-right  : 3.2rem !important;
+}
+
+.about-info__text .btn:hover {
+    background   : var(--color-1) !important;
+    border-color : var(--color-1) !important;
+    color        : var(--color-gray-10) !important;
+    box-shadow   : 0 4px 20px rgba(234, 190, 124, 0.25) !important;
+}
+
+/* -------------------------------------------------------------------
+ * ## Section-label chips (pretitle without the line decoration)
+ * ------------------------------------------------------------------- */
+.about-timelines .text-pretitle,
+.about-expertise .text-pretitle {
+    display       : inline-flex;
+    align-items   : center;
+    padding       : 0.55rem 1.4rem;
+    background    : rgba(234, 190, 124, 0.07);
+    border        : 1px solid rgba(234, 190, 124, 0.18);
+    border-radius : var(--border-radius-pill);
+    margin-bottom : var(--vspace-1_25);
+    color         : var(--color-1);
+    letter-spacing: 0.28em;
+    font-size     : 1rem;
+}
+
+/* -------------------------------------------------------------------
+ * ## Timeline: glass cards with accent left border
+ * ------------------------------------------------------------------- */
+.timeline::before {
+    background : linear-gradient(to bottom, rgba(234, 190, 124, 0.6), rgba(35, 150, 127, 0.2), transparent);
+    width      : 2px;
+    border-radius : 2px;
+}
+
+.timeline__bullet {
+    width      : 12px !important;
+    height     : 12px !important;
+    border     : 2px solid var(--color-1) !important;
+    background : var(--color-gray-10) !important;
+    box-shadow : 0 0 0 4px rgba(234, 190, 124, 0.1);
+    left       : -2px !important;
+}
+
+.timeline__block {
+    padding-bottom : var(--vspace-1_25) !important;
+}
+
+.timeline__header {
+    background    : rgba(255, 255, 255, 0.025);
+    border        : 1px solid rgba(255, 255, 255, 0.05);
+    border-left   : 3px solid var(--color-1);
+    border-radius : 0 var(--border-radius) var(--border-radius) 0;
+    padding       : 1.8rem 2rem 1.4rem;
+    transition    : var(--transition-smooth);
+}
+
+.timeline__header:hover {
+    background  : rgba(255, 255, 255, 0.04);
+    border-color: rgba(234, 190, 124, 0.18);
+    border-left-color : var(--color-1);
+    transform   : translateX(6px);
+    box-shadow  : 0 4px 28px rgba(0, 0, 0, 0.28);
+}
+
+.timeline__title {
+    font-size     : var(--text-md) !important;
+    font-weight   : 600 !important;
+    color         : var(--color-white) !important;
+    margin-bottom : 0.5rem;
+}
+
+.timeline__meta {
+    font-size     : var(--text-sm) !important;
+    font-weight   : 400 !important;
+    color         : var(--color-1) !important;
+    margin-bottom : 0.25rem !important;
+}
+
+.timeline__timeframe {
+    font-size  : var(--text-xs);
+    color      : var(--color-2-lighter) !important;
+    letter-spacing : 0.12em;
+    margin-top : 0.4rem;
+}
+
+.timeline__desc p {
+    color       : var(--color-text);
+    font-size   : var(--text-sm);
+    line-height : 1.75;
+}
+
+/* -------------------------------------------------------------------
+ * ## Skills: pill badges
+ * ------------------------------------------------------------------- */
+.about-expertise .skills-list {
+    margin-top : var(--vspace-0_75) !important;
+}
+
+.about-expertise .skills-list li {
+    display       : inline-flex !important;
+    align-items   : center;
+    padding       : 0.6rem 1.4rem !important;
+    background    : rgba(234, 190, 124, 0.06);
+    border        : 1px solid rgba(234, 190, 124, 0.16);
+    border-radius : var(--border-radius-pill);
+    margin        : 0.3rem 0.2rem;
+    font-size     : var(--text-sm);
+    color         : var(--color-text);
+    transition    : var(--transition-smooth);
+    cursor        : default;
+    line-height   : 1;
+}
+
+.about-expertise .skills-list li:not(:last-child)::after {
+    content : none !important;
+    display : none !important;
+}
+
+.about-expertise .skills-list li:hover {
+    background  : rgba(234, 190, 124, 0.13);
+    border-color: var(--color-1);
+    color       : var(--color-1);
+    transform   : translateY(-2px);
+    box-shadow  : 0 4px 16px rgba(234, 190, 124, 0.12);
+}
+
+.about-expertise .h2 {
+    font-size      : var(--text-xl) !important;
+    letter-spacing : 0;
+    color          : var(--color-white);
+    font-family    : var(--font-2) !important;
+    font-weight    : 400;
+}
+
+/* -------------------------------------------------------------------
+ * ## Certifications: teal pill badges
+ * ------------------------------------------------------------------- */
+.Cerf-list {
+    list-style  : none !important;
+    margin-left : 0 !important;
+}
+
+.Cerf-list > li {
+    padding-left  : 0 !important;
+    margin-bottom : var(--vspace-1_25);
+    font-size     : var(--text-md);
+    font-weight   : 500;
+    color         : var(--color-white);
+}
+
+.Cerf-list > li::after {
+    content : none !important;
+    display : none !important;
+}
+
+#cerflinks {
+    font-size  : inherit !important;
+    list-style : none;
+    margin     : 0.8rem 0 0 0;
+    padding    : 0;
+    display    : flex;
+    flex-wrap  : wrap;
+    gap        : 0.6rem;
+}
+
+#cerflinks li {
+    padding-left : 0;
+    display      : inline-block;
+}
+
+#cerflinks li::after {
+    display : none !important;
+}
+
+#cerflinks li a {
+    display       : inline-block;
+    padding       : 0.55rem 1.3rem;
+    background    : rgba(35, 150, 127, 0.07);
+    border        : 1px solid rgba(35, 150, 127, 0.22);
+    border-radius : var(--border-radius-pill);
+    font-size     : var(--text-sm);
+    color         : var(--color-2-lighter);
+    transition    : var(--transition-smooth);
+    line-height   : 1;
+}
+
+#cerflinks li a:hover {
+    background  : rgba(35, 150, 127, 0.15);
+    border-color: var(--color-2);
+    color       : var(--color-2-lighter);
+    transform   : translateY(-2px);
+    box-shadow  : 0 4px 16px rgba(35, 150, 127, 0.15);
+}
+
+#test::after {
+    content : none !important;
+}
+
+/* -------------------------------------------------------------------
+ * ## Works/Projects section
+ * ------------------------------------------------------------------- */
+.s-works {
+    position : relative;
+}
+
+.s-works::before {
+    content  : '';
+    position : absolute;
+    top      : 0;
+    left     : 50%;
+    transform: translateX(-50%);
+    width    : 80%;
+    max-width: 600px;
+    height   : 1px;
+    background: linear-gradient(90deg, transparent, rgba(234, 190, 124, 0.25), rgba(35, 150, 127, 0.25), transparent);
+}
+
+.works-portfolio .h1,
+.stats .h1 {
+    color : rgba(255, 255, 255, 0.85);
+    font-size : var(--text-xxl) !important;
+}
+
+/* -------------------------------------------------------------------
+ * ## Contact section: glass card + gradient top rule
+ * ------------------------------------------------------------------- */
+.s-contact {
+    position : relative;
+}
+
+.s-contact::before {
+    content   : '';
+    position  : absolute;
+    top       : 0;
+    left      : 50%;
+    transform : translateX(-50%);
+    width     : 80%;
+    max-width : 600px;
+    height    : 1px;
+    background: linear-gradient(90deg, transparent, var(--color-1), var(--color-2), transparent);
+}
+
+.contact-section-heading {
+    text-align    : center;
+    padding-top   : var(--vspace-3);
+    padding-bottom: var(--vspace-2);
+}
+
+.contact-section-heading h2 {
+    font-family : var(--font-2);
+    font-size   : var(--text-display-1);
+    color       : var(--color-white);
+    margin      : 0 0 1rem;
+    line-height : 1.1;
+}
+
+.contact-section-heading p {
+    color     : var(--color-text-light);
+    font-size : var(--text-md);
+}
+
+.contact-bottom {
+    border        : 1px solid var(--color-glass-border) !important;
+    border-radius : var(--border-radius-lg) !important;
+    padding       : var(--vspace-2) var(--vspace-2_5) !important;
+    margin-top    : var(--vspace-1) !important;
+    background    : rgba(255, 255, 255, 0.02) !important;
+    backdrop-filter : blur(8px);
+    border-bottom : 1px solid var(--color-glass-border) !important;
+}
+
+.contact-links a,
+.contact-social a {
+    color      : var(--color-text) !important;
+    transition : var(--transition-smooth);
+    font-size  : var(--text-md);
+}
+
+.contact-links a:hover,
+.contact-social a:hover {
+    color : var(--color-1) !important;
+}
+
+.contact-social {
+    display  : flex;
+    gap      : 1.5rem;
+    flex-wrap: wrap;
+}
+
+.contact-social li {
+    display : block;
+}
+
+.contact-social li::after {
+    display : none !important;
+}
+
+/* -------------------------------------------------------------------
+ * ## Footer: gradient top rule + modernized go-top button
+ * ------------------------------------------------------------------- */
+.s-footer {
+    position : relative;
+    padding-top: var(--vspace-2) !important;
+}
+
+.s-footer::before {
+    content   : '';
+    position  : absolute;
+    top       : 0;
+    left      : 0;
+    right     : 0;
+    height    : 1px;
+    background: linear-gradient(90deg, transparent, rgba(234, 190, 124, 0.2), rgba(35, 150, 127, 0.2), transparent);
+}
+
+.ss-go-top a {
+    border-radius : var(--border-radius-sm) !important;
+    border-color  : rgba(255, 255, 255, 0.15) !important;
+    background    : rgba(255, 255, 255, 0.04) !important;
+    transition    : var(--transition-smooth) !important;
+}
+
+.ss-go-top a:hover {
+    background : var(--color-1) !important;
+    border-color : var(--color-1) !important;
+}
+
+.ss-go-top a:hover svg path {
+    fill : var(--color-gray-10) !important;
+}
+
+/* -------------------------------------------------------------------
+ * ## Buttons global modernization
+ * ------------------------------------------------------------------- */
+.btn--medium {
+    border-radius : var(--border-radius-pill) !important;
+}
+
+/* -------------------------------------------------------------------
+ * ## Preloader
+ * ------------------------------------------------------------------- */
+#preloader {
+    background : var(--color-gray-10);
+}
