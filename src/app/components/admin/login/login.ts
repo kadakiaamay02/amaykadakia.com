@@ -9,7 +9,6 @@ declare var google: any;
   imports: [],
   templateUrl: './login.html',
   styleUrl: './login.scss',
-  standalone: true
 })
 export class Login implements AfterViewInit {
 
