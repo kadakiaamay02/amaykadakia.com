@@ -40,19 +40,25 @@ export class Login implements AfterViewInit {
   }
 
   handleLogin(response: any) {
-    const googleToken = response.credential;
-    
-    // CRITICAL: Send this token to your backend!
-    // Your backend will verify the token and check if the email matches your admin email.
-    this.http.post('https://your-backend-api.com/api/admin-auth', { token: googleToken })
+    const googleToken = response?.credential;
+
+    if (!googleToken) {
+      console.error('No Google credential returned from Google Sign-In.');
+      return;
+    }
+
+    this.http.post<{ success: boolean; message?: string }>(`${environment.apiUrl}/admin-auth`, { token: googleToken })
       .subscribe({
         next: (res) => {
-          console.log('Backend confirmed you are the admin!');
-          // Redirect to the admin dashboard
+          if (res.success) {
+            console.log('Backend confirmed you are the admin!');
+            // Redirect to the admin dashboard
+          } else {
+            console.error('Login failed or you are not the admin.', res.message);
+          }
         },
         error: (err) => {
           console.error('Login failed or you are not the admin.', err);
-          // Show an error message on the screen
         }
       });
   }
