@@ -7,7 +7,6 @@ import { SamayMenuComponent } from './components/samay-menu/samay-menu.component
 import { WineListComponent } from './components/sa/wine-list/wine-list.component';
 import { RestaurantListComponent } from './components/sa/restaurant-list/restaurant-list.component';
 import { NotesComponent } from './components/sa/notes/notes.component';
-import { Login } from './components/admin/login/login';
 import { samayGuard } from './guards/samay.guard';
 
 
@@ -22,8 +21,7 @@ export const routes: Routes = [
       { path: 'samay/restaurants', component: RestaurantListComponent, canActivate: [samayGuard] },
       { path: 'games/rock-paper-scissors', component: RockPaperScissorsComponent},
       { path: 'games/tic-tac-toe', component: TicTacToeComponent },
-      { path: 'notes', component: NotesComponent},
-      { path: 'admin', component: Login }
+      { path: 'notes', component: NotesComponent}
     ]
   }
 ];
