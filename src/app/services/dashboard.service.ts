@@ -12,6 +12,7 @@ export interface EventItem {
 	level: string;
 	message: string;
 	data: any;
+	_expanded?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
