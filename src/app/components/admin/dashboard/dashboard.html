@@ -1,0 +1,41 @@
+<div class="dashboard-root">
+	<div class="controls">
+		<label>Limit: <input type="number" [(ngModel)]="limit" min="1" /></label>
+		<button (click)="refreshManual()" [disabled]="loading">Refresh</button>
+		<label class="auto">
+			<input type="checkbox" [(ngModel)]="autoRefresh" (change)="toggleAutoRefresh()" /> Auto-refresh
+		</label>
+		<span class="status">{{ loading ? 'Loading...' : (error || '') }}</span>
+	</div>
+
+	<table class="events-table" *ngIf="events?.length; else noEvents">
+		<thead>
+			<tr>
+				<th>Time</th>
+				<th>Source</th>
+				<th>Level</th>
+				<th>Message</th>
+				<th>Data</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let e of events">
+				<td>{{ e.timestamp_iso || (e.timestamp * 1000 | date: 'yyyy-MM-dd HH:mm:ss') }}</td>
+				<td>{{ e.source }}</td>
+				<td><span class="level" [ngClass]="e.level">{{ e.level }}</span></td>
+				<td>{{ e.message }}</td>
+				<td>
+					<div class="data-cell">
+						<button (click)="toggleRow(e)">{{ e._expanded ? 'Collapse' : 'Expand' }}</button>
+						<pre *ngIf="e._expanded">{{ e.data ? (e.data | json) : 'null' }}</pre>
+					</div>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<ng-template #noEvents>
+		<div class="no-events">No events to show.</div>
+	</ng-template>
+</div>
+

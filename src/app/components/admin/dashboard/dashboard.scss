@@ -1,0 +1,46 @@
+.dashboard-root {
+	padding: 12px;
+	font-family: Arial, Helvetica, sans-serif;
+
+	.controls {
+		display: flex;
+		gap: 12px;
+		align-items: center;
+		margin-bottom: 8px;
+
+		input[type="number"] { width: 80px; }
+		.status { color: #666; margin-left: auto; }
+	}
+
+	.events-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 13px;
+
+		th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; vertical-align: top; }
+
+		.level { padding: 4px 8px; border-radius: 4px; color: white; text-transform: uppercase; font-weight: 600; font-size: 12px; }
+		.info { background: #2b8cff; }
+		.warn { background: #ff8c00; }
+		.error { background: #e03b3b; }
+		.unknown { background: #777; }
+
+		.data-cell pre { max-height: 300px; overflow: auto; background: #f7f7f7; padding: 8px; border-radius: 4px; }
+	}
+
+	.no-events { color: #666; padding: 12px; }
+}
+
+@media (max-width: 700px) {
+	.dashboard-root .events-table, .dashboard-root .events-table thead, .dashboard-root .events-table tbody, .dashboard-root .events-table th, .dashboard-root .events-table td, .dashboard-root .events-table tr {
+		display: block;
+	}
+	.dashboard-root .events-table tr { margin-bottom: 12px; }
+	.dashboard-root .events-table td { border: none; padding: 6px 0; }
+	.dashboard-root .events-table td:before {
+		content: attr(data-label);
+		font-weight: 700;
+		display: block;
+	}
+}
+
