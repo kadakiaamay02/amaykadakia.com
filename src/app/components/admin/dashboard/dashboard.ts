@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService, EventItem } from '../../../services/dashboard.service';
-import { Subject, Subscription, timer } from 'rxjs';
-import { switchMap, takeUntil } from 'rxjs/operators';
+import { EMPTY, Subject, Subscription, timer } from 'rxjs';
+import { catchError, switchMap, takeUntil } from 'rxjs/operators';
 
 @Component({
   standalone: true,
@@ -26,10 +26,7 @@ export class Dashboard implements OnInit, OnDestroy {
   constructor(private dashboardService: DashboardService) {}
 
   ngOnInit(): void {
-    this.loadEvents();
-    if (this.autoRefresh) {
-      this.startAutoRefresh();
-    }
+    this.autoRefresh ? this.startAutoRefresh() : this.loadEvents();
   }
 
   ngOnDestroy(): void {
@@ -63,17 +60,16 @@ export class Dashboard implements OnInit, OnDestroy {
     this.stopAutoRefresh();
     this.autoSub = timer(0, this.autoMs).pipe(
       takeUntil(this.destroy$),
-      switchMap(() => this.dashboardService.getEvents(this.limit))
-    ).subscribe({
-      next: (events) => {
-        this.events = events.map(e => ({ ...e, _expanded: false } as any));
-        this.loading = false;
-        this.error = null;
-      },
-      error: (err) => {
-        console.error('Auto-refresh failed', err);
-        this.error = 'Auto-refresh failed';
-      }
+      switchMap(() => this.dashboardService.getEvents(this.limit).pipe(
+        catchError(err => {
+          console.error('Auto-refresh failed', err);
+          this.error = 'Failed to load events';
+          return EMPTY;
+        })
+      ))
+    ).subscribe(events => {
+      this.applyEvents(events);
+      this.error = null;
     });
   }
 
@@ -85,15 +81,17 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   toggleAutoRefresh(): void {
-    this.autoRefresh = !this.autoRefresh;
-    if (this.autoRefresh) {
-      this.startAutoRefresh();
-    } else {
-      this.stopAutoRefresh();
-    }
+    this.autoRefresh ? this.startAutoRefresh() : this.stopAutoRefresh();
   }
 
-  toggleRow(event: any): void {
-    event._expanded = !event._expanded;
+  private expanded = new Set<number>();
+
+  private applyEvents(events: EventItem[]): void {
+    this.events = events.map(e => ({ ...e, _expanded: this.expanded.has(e.id) }));
+  }
+
+  toggleRow(e: EventItem): void {
+  e._expanded = !e._expanded;
+  e._expanded ? this.expanded.add(e.id) : this.expanded.delete(e.id);
   }
 }

@@ -23,7 +23,7 @@ export const routes: Routes = [
       { path: 'games/rock-paper-scissors', component: RockPaperScissorsComponent},
       { path: 'games/tic-tac-toe', component: TicTacToeComponent },
       { path: 'notes', component: NotesComponent},
-      { path: 'admin/dashboard', component: Dashboard, canActivate: [samayGuard] }
+      { path: 'admin/dashboard', component: Dashboard }
     ]
   }
 ];

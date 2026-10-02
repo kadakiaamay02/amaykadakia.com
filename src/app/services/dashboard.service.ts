@@ -22,13 +22,8 @@ export class DashboardService {
 	constructor(private http: HttpClient) {}
 
 	getEvents(limit = 100): Observable<EventItem[]> {
-		const params = new HttpParams().set('limit', String(limit));
-		return this.http.get<EventItem[]>(this.eventsUrl, { params }).pipe(
-			catchError((err) => {
-				console.error('DashboardService.getEvents error', err);
-				return of([] as EventItem[]);
-			})
-		);
+  		const params = new HttpParams().set('limit', String(limit));
+  		return this.http.get<EventItem[]>(this.eventsUrl, { params });
 	}
 
 	postEvent(body: Partial<EventItem>) {
