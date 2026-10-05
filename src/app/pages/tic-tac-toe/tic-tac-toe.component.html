@@ -21,11 +21,13 @@
         {{ cell }}
       </div>
 
-      <div class="about-info__text">
-        <button class="btn btn--outline" (click)="toggleMode()">Change Mode ({{ gameMode === 'human' ? 'Human vs. Human' : 'Human vs. Machine' }})</button>
-        @if(this.isBoardFull() || winner) {
-          <button class="btn btn--outline" (click)="resetGame()">New Game</button>
-        }
-      </div>
+    <div class="game-actions">
+      @if (isBoardFull() || winner) {
+        <button type="button" class="btn btn--primary" (click)="resetGame()">New Game</button>
+      }
+      <button type="button" class="btn btn--outline" (click)="toggleMode()">
+        {{ gameMode === 'human' ? 'Switch to vs. Machine' : 'Switch to vs. Human' }}
+      </button>
+    </div>
   </div>
 </div>
