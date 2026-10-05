@@ -8,6 +8,7 @@ import { Certification, EducationModel } from '@app/models/portfolio.model';
   imports: [],
   templateUrl: './education.html',
   styleUrl: './education.scss',
+  standalone: true
 })
 export class Education implements OnInit {
   degrees: EducationModel[] = [];

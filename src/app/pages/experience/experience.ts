@@ -9,6 +9,7 @@ import { WorkExperience } from '@app/models/portfolio.model';
   imports: [],
   templateUrl: './experience.html',
   styleUrl: './experience.scss',
+  standalone: true
 })
 export class Experience {
     experiences: WorkExperience[] = [];

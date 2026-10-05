@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   templateUrl: './nav-bar.html',
   styleUrl: './nav-bar.scss',
+  standalone: true
 })
 export class NavBar {
   isMenuOpen = true;
