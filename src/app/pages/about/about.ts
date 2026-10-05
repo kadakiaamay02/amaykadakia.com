@@ -26,7 +26,7 @@ export class About implements OnInit, OnDestroy {
     'Hello, World!',
     'I am Amay,',
     'a Developer,',
-    '& a Student',
+    '& a Student.',
   ];
 
   /** What's currently typed on each line of the editor (starts as empty lines) */

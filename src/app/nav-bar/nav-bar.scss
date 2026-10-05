@@ -1,21 +1,22 @@
-// Palette mapping for the variable names this stylesheet uses.
-// Move this :root block into your global styles (e.g. _colors.scss)
-// so every component picks up the same values.
-:root {
-  --primary-color:   #222831; // page background
-  --neutral-color:   #393E46; // navbar / raised surfaces
-  --accent-color:    #948979; // borders, underlines, subtle accents
-  --secondary-color: #DFD0B8; // text, logo, icons
+// Colors come from the global palette in styles.scss.
+// (The old :root block that lived here never applied inside a component, so it's removed.)
+
+// Sticky goes on the component's host element. When it was on .navbar,
+// the navbar could only "stick" inside its own wrapper, so it scrolled away,
+// and the dropdown could end up layered under page content.
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .navbar {
+  position: relative; // anchors the mobile dropdown
   background: var(--neutral-color);
-  // Shadows need more opacity to show up against a dark page
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
   border-bottom: 1px solid rgba(148, 137, 121, 0.25);
-  padding: 1rem 2rem;
-  position: sticky;
-  top: 0;
+  padding: 0 2rem;
 }
 
 .nav-container {
@@ -29,6 +30,7 @@
   font-weight: bold;
   color: var(--secondary-color);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .nav-links {
@@ -47,6 +49,7 @@
 
   &:hover {
     border-bottom-color: var(--accent-color);
+    cursor: url('../../assets/computer.png') 16 16, pointer;
   }
 
   &:focus-visible {
@@ -57,48 +60,77 @@
 
 /* Highlight the active route */
 .active-link {
-  color: var(--secondary-color) !important;
   font-weight: 600;
-  border-bottom: 2px solid var(--secondary-color) !important;
+  border-bottom-color: var(--secondary-color) !important;
 }
 
 /* Mobile Hamburger */
 .menu-toggle {
   display: none;
   flex-direction: column;
+  justify-content: center;
   gap: 5px;
+  width: 44px;  // comfortable tap target
+  height: 44px;
+  padding: 0 8px;
   background: none;
   border: none;
+  border-radius: 6px;
   cursor: url('../../assets/computer.png') 16 16, pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 2px;
+  }
 }
 
 .bar {
-  width: 25px;
+  display: block;
+  width: 28px;
   height: 3px;
-  // Sand reads more clearly than taupe on the slate navbar
+  border-radius: 2px;
   background-color: var(--secondary-color);
-  transition: 0.3s;
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+// Hamburger turns into an X when open
+.menu-toggle.open {
+  .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+  .bar:nth-child(2) { opacity: 0; }
+  .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .navbar { padding: 0.75rem 1.25rem; }
+
   .menu-toggle { display: flex; }
 
+  .nav-logo { font-size: 2rem; }
+
   .nav-links {
-    display: none;
+    display: none; // hidden until the hamburger is clicked
     flex-direction: column;
     gap: 1.25rem;
     position: absolute;
     top: 100%;
     left: 0;
     width: 100%;
-    // Same color as the bar so the dropdown reads as part of it
+    margin: 0;
+    padding: 1.25rem 0;
+    text-align: center;
     background: var(--neutral-color);
     border-top: 1px solid rgba(148, 137, 121, 0.25);
-    padding: 1rem 0;
-    text-align: center;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
   }
 
   .nav-links.active { display: flex; }
+}
+
+@media (max-width: 400px) {
+  .nav-logo { font-size: 1.6rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar { transition: none; }
 }

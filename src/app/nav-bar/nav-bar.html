@@ -1,20 +1,27 @@
 <nav class="navbar">
   <div class="nav-container">
-    <a routerLink="/about" routerLinkActive="active-link" class="nav-logo">Amay Kadakia.</a>
+    <a routerLink="/about" class="nav-logo" (click)="closeMenu()">Amay Kadakia.</a>
 
-    <button class="menu-toggle" (click)="toggleMenu()" aria-label="Toggle navigation">
-      <span class="bar" [class.open]="isMenuOpen"></span>
-      <span class="bar" [class.open]="isMenuOpen"></span>
-      <span class="bar" [class.open]="isMenuOpen"></span>
+    <button
+      type="button"
+      class="menu-toggle"
+      [class.open]="isMenuOpen"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="isMenuOpen"
+      aria-controls="nav-links"
+      [attr.aria-label]="isMenuOpen ? 'Close menu' : 'Open menu'">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
     </button>
 
-    <ul class="nav-links" [class.active]="isMenuOpen">
-      @for(link of navLinks; track link.path) {
+    <ul id="nav-links" class="nav-links" [class.active]="isMenuOpen">
+      @for (link of navLinks; track link.path) {
         <li>
           <a
             [routerLink]="link.path"
             routerLinkActive="active-link"
-            (click)="isMenuOpen = false">
+            (click)="closeMenu()">
             {{ link.label }}
           </a>
         </li>
