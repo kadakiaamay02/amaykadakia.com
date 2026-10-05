@@ -1,0 +1,21 @@
+<section class="experience-section">
+  <h2 class="section-title">Professional Experience</h2>
+
+  <div class="timeline">
+    @for (job of experiences; track job.company) {
+      <div class="experience-card">
+        <div class="card-header">
+          <h3 class="role">{{ job.role }}</h3>
+          <span class="period">{{ job.period }}</span>
+        </div>
+        <h4 class="company">{{ job.company }}</h4>
+        
+        <ul class="description-list">
+          @for (bullet of job.description; track bullet) {
+            <li>{{ bullet }}</li>
+          }
+        </ul>
+      </div>
+    }
+  </div>
+</section>

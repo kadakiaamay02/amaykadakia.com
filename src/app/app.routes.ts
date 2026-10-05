@@ -1,29 +1,33 @@
 import { Routes } from '@angular/router';
-import { AboutComponent } from './components/about/about.component';
-import { GamesMenuComponent } from './components/games-menu/games-menu.component';
-import { RockPaperScissorsComponent } from './components/rock-paper-scissors/rock-paper-scissors.component';
-import { TicTacToeComponent } from './components/tic-tac-toe/tic-tac-toe.component';
-import { SamayMenuComponent } from './components/samay-menu/samay-menu.component';
-import { WineListComponent } from './components/sa/wine-list/wine-list.component';
-import { RestaurantListComponent } from './components/sa/restaurant-list/restaurant-list.component';
-import { NotesComponent } from './components/sa/notes/notes.component';
+import { RockPaperScissorsComponent } from './pages/rock-paper-scissors/rock-paper-scissors.component';
+import { TicTacToeComponent } from './pages/tic-tac-toe/tic-tac-toe.component';
+import { SamayMenuComponent } from './pages/samay-menu/samay-menu.component';
+import { WineListComponent } from './pages/sa/wine-list/wine-list.component';
+import { RestaurantListComponent } from './pages/sa/restaurant-list/restaurant-list.component';
+import { NotesComponent } from './pages/sa/notes/notes.component';
 import { samayGuard } from './guards/samay.guard';
-import { Dashboard } from './components/admin/dashboard/dashboard';
+import { Dashboard } from './pages/dashboard/dashboard';
+import {About} from './pages/about/about';
+import {Experience} from './pages/experience/experience';
+import {Education} from './pages/education/education';
+import { GamesMenu } from './pages/games-menu/games-menu';
+import { Projects } from './pages/projects/projects';
 
 
 export const routes: Routes = [
-  {
-    path: '',
-    children: [
-      { path: '', component: AboutComponent },
-      { path: 'games', component: GamesMenuComponent },
-      { path: 'samay', component: SamayMenuComponent },
-      { path: 'samay/wines', component: WineListComponent, canActivate: [samayGuard] },
-      { path: 'samay/restaurants', component: RestaurantListComponent, canActivate: [samayGuard] },
-      { path: 'games/rock-paper-scissors', component: RockPaperScissorsComponent},
-      { path: 'games/tic-tac-toe', component: TicTacToeComponent },
-      { path: 'notes', component: NotesComponent},
-      { path: 'admin/dashboard', component: Dashboard }
-    ]
-  }
+
+  { path: '', redirectTo: '/about', pathMatch: 'full' },
+  { path: 'about', component: About },
+  { path: 'games', component: GamesMenu },
+  { path: 'experience', component: Experience },
+  { path: 'education', component: Education },
+  { path: 'projects', component: Projects },
+  { path: 'games/rock-paper-scissors', component: RockPaperScissorsComponent},
+  { path: 'games/tic-tac-toe', component: TicTacToeComponent },
+  { path: 'samay', component: SamayMenuComponent },
+  { path: 'samay/wines', component: WineListComponent, canActivate: [samayGuard] },
+  { path: 'samay/restaurants', component: RestaurantListComponent, canActivate: [samayGuard] },
+  { path: 'notes', component: NotesComponent, canActivate: [samayGuard] },
+  { path: 'admin/dashboard', component: Dashboard },
+  { path: '**', redirectTo: '/about', pathMatch: 'full' },
 ];

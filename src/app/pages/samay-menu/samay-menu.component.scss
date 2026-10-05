@@ -1,0 +1,27 @@
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    padding: 0 1.5rem;
+    padding-top: clamp(4rem, 14vh, 9rem);
+
+    h1, h2 {
+        font-size: clamp(2.25rem, 4vw, 3.25rem);
+        margin-bottom: 0.5rem;
+    }
+
+    p {
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn {
+        margin-top: 1.25rem;
+        width: 100%;
+        max-width: 440px;
+        padding: 1.25rem 2rem;
+        font-size: 1.35rem;
+    }
+}

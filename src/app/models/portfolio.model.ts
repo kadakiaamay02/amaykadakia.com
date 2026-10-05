@@ -1,4 +1,4 @@
-export interface Portfolio {
+export interface Project {
   id: string;
   title: string;
   category: string;
@@ -6,14 +6,8 @@ export interface Portfolio {
   image: string;
   tags: string[];
   link?: string;
+  details?: string;
   githubLink?: string;
-}
-
-export interface TimelineEntry {
-  title: string;
-  subtitle: string;
-  timeframe: string;
-  description: string[];
 }
 
 export interface Skill {
@@ -27,4 +21,18 @@ export interface Certification {
     title: string;
     link: string;
   }[];
+}
+
+export interface WorkExperience {
+  company: string;
+  role: string;
+  period: string;
+  description: string[];
+}
+
+export interface EducationModel {
+  school: string;
+  degree: string;
+  period: string;
+  description: string[];
 }

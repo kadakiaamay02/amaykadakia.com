@@ -1,4 +1,8 @@
-/* Component level styles */
-:host {
-  display: block;
+.about{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    color: var(--primary-color, #222831);
 }

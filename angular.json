@@ -36,8 +36,7 @@
               }
             ],
             "styles": [
-              "src/styles.scss",
-              "css/vendor.css"
+              "src/styles.scss"
             ],
             "scripts": [],
             "vendorChunk": true

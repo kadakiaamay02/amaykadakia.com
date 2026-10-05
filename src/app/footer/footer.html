@@ -1,0 +1,15 @@
+<footer class="footer">
+  <div class="footer-container">
+    <div class="social-links">
+      @for (link of socialLinks; track link.label) {
+        <a [href]="link.url" target="_blank" rel="noopener noreferrer" class="social-icon">
+          {{ link.label }}
+        </a>
+      }
+    </div>
+    
+    <div class="copyright">
+      <p>&copy; {{ currentYear }} Amay Kadakia. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

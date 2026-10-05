@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\amayk\\\\code\\\\amaykadakia.com\" -Force)",
-      "Bash(Select-Object Name, PSIsContainer)",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\amayk\\\\code\\\\amaykadakia.com\\\\src\\\\app\" -Recurse | Where-Object {$_.PSIsContainer} | Sort-Object FullName | ForEach-Object {$_.FullName.Replace\\(\"C:\\\\Users\\\\amayk\\\\code\\\\amaykadakia.com\\\\src\\\\app\", \"\"\\)} | Select-Object -First 50)"
-    ]
-  }
-}

@@ -1,0 +1,59 @@
+<section class="education-page">
+
+  <!-- Degrees -->
+  <div class="column">
+    <h2 class="section-title">Education</h2>
+
+    <div class="timeline">
+      @for (degree of degrees; track degree.school) {
+        <article class="experience-card">
+          <div class="card-header">
+            <!-- Falls back to the school name when there's no degree (e.g. Ohlone) -->
+            <h3 class="degree">{{ degree.degree || degree.school }}</h3>
+            <span class="period">{{ degree.period }}</span>
+          </div>
+
+          @if (degree.degree) {
+            <h4 class="school">{{ degree.school }}</h4>
+          }
+
+          @if (degree.description.length) {
+            <ul class="description-list">
+              @for (bullet of degree.description; track bullet) {
+                <li>{{ bullet }}</li>
+              }
+            </ul>
+          }
+        </article>
+      }
+    </div>
+  </div>
+
+  <!-- Certifications -->
+  @if (certifications.length) {
+    <div class="column">
+      <h2 class="section-title">Certifications</h2>
+
+      <div class="timeline">
+        @for (org of certifications; track org.organization) {
+          <article class="experience-card">
+            <div class="card-header">
+              <h3 class="degree">{{ org.organization }}</h3>
+              <span class="period">
+                {{ org.certifications.length }} {{ org.certifications.length === 1 ? 'certificate' : 'certificates' }}
+              </span>
+            </div>
+
+            <ul class="description-list cert-list">
+              @for (cert of org.certifications; track cert.title) {
+                <li>
+                  <a [href]="cert.link" target="_blank" rel="noopener noreferrer">{{ cert.title }}</a>
+                </li>
+              }
+            </ul>
+          </article>
+        }
+      </div>
+    </div>
+  }
+</section>

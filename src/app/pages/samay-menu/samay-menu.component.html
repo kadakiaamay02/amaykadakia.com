@@ -1,0 +1,22 @@
+
+<span class=" no-js ss-preload" lang="en">
+
+    @if(!showMenu) {
+        <div class="login-dialog">
+            <h2>Enter Password</h2>
+            <input type="password" [(ngModel)]="password" placeholder="Password" />
+            <button (click)="checkPassword()">Login</button>
+            @if(error) {
+                <div class="error">{{ error }}</div>
+            }
+        </div>
+    }
+
+    @else{
+        <div class="menu-container">
+        <a class="btn btn btn--primary " routerLink="/samay/wines">Wines</a>
+        <a class="btn btn btn--primary " routerLink="/notes">Notes</a>
+        <a class="btn btn--primary u-fullwidth" routerLink="/samay/restaurants">Restaurants</a>
+        </div>
+    }
+</span>

@@ -1,0 +1,34 @@
+<div class="about">
+  <div class="intro">
+    <h1 class="typewriter" aria-label="Hello, World! I am Amay, a Software Engineer, and a student">
+      <span #typed class="typewriter__text" aria-hidden="true"></span><span class="typewriter__caret" aria-hidden="true"></span>
+    </h1>
+
+    <p class="bio">
+      I am a Senior Frontend Developer at Fidelity Investments. I am pursuing a Master of Science in Computer Science
+      with a specialization in Computing Systems from Georgia Institute of Technology. I recently graduated from the
+      University of Texas at Arlington with a B.Sc in Computer Science Engineering.
+    </p>
+
+    <a class="btn btn--primary btn--lg" href="/AmayKadakia.pdf" target="_blank" rel="noopener">Resume</a>
+  </div>
+
+  @if (skillGroups.length) {
+    <section class="skills" aria-labelledby="skills-title">
+      <h2 id="skills-title" class="skills__title">Skills</h2>
+
+      <div class="skills__groups">
+        @for (group of skillGroups; track group.category) {
+          <div class="skill-group">
+            <h3 class="skill-group__name">{{ group.category }}</h3>
+            <ul class="tags">
+              @for (skill of group.skills; track skill.name) {
+                <li class="tag">{{ skill.name }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>
