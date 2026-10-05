@@ -13,6 +13,7 @@ interface SkillGroup {
   imports: [],
   templateUrl: './about.html',
   styleUrl: './about.scss',
+  standalone: true
 })
 export class About implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('typed') typedEl!: ElementRef<HTMLSpanElement>;

@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { RockPaperScissorsService } from '@app/services/rockpaperscissors.service';
 import { FlashService } from '@app/services/flash.service';
 
@@ -7,7 +6,7 @@ import { FlashService } from '@app/services/flash.service';
 @Component({
   selector: 'app-rock-paper-scissors',
   standalone: true,
-  imports: [ RouterLink],
+  imports: [ ],
   templateUrl: './rock-paper-scissors.component.html',
   styleUrl: './rock-paper-scissors.component.scss'
 })
