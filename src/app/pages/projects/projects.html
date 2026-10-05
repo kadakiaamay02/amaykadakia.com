@@ -1,6 +1,8 @@
 <section class="projects-section">
-  <h2 class="section-title">Projects</h2>
-  <p class="intro">Here are some of my recent projects. Feel free to check them out.</p>
+  <app-code-window
+    title="Projects"
+    fileName="projects.ts"
+    [lines]="headerLines" />
 
   <div class="projects-grid">
     @for (project of projects; track project.id) {
@@ -13,12 +15,12 @@
 
         <div class="card-body">
           <div class="card-header">
-            <h3 class="title">
+            <h2 class="title">
               <!-- This button covers the whole card, so clicking anywhere opens the details -->
               <button type="button" class="card-open" (click)="openProject(project)">
                 {{ project.title }}
               </button>
-            </h3>
+            </h2>
             <span class="category">{{ project.category }}</span>
           </div>
 

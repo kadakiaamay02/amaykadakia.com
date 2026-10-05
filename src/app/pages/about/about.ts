@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, DestroyRef, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PortfolioService } from '@app/services/portfolio.service';
 import { Skill } from '@app/models/portfolio.model';
@@ -15,9 +15,7 @@ interface SkillGroup {
   styleUrl: './about.scss',
   standalone: true
 })
-export class About implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('typed') typedEl!: ElementRef<HTMLSpanElement>;
-
+export class About implements OnInit, OnDestroy {
   skillGroups: SkillGroup[] = [];
 
   private portfolioService = inject(PortfolioService);
@@ -27,18 +25,25 @@ export class About implements OnInit, AfterViewInit, OnDestroy {
   private readonly lines = [
     'Hello, World!',
     'I am Amay,',
-    'a Software Engineer,',
-    '& a student',
+    'a Developer,',
+    '& a Student',
   ];
+
+  /** What's currently typed on each line of the editor (starts as empty lines) */
+  typedLines = signal<string[]>(this.lines.map(() => ''));
+
+  /** The line the cursor is on */
+  currentLine = signal(0);
+
+  /** Column shown in the status bar, like VS Code's "Ln 2, Col 7" */
+  cursorCol = computed(() => this.typedLines()[this.currentLine()].length + 1);
 
   ngOnInit(): void {
     this.portfolioService.skills$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(skills => this.skillGroups = this.groupSkills(skills));
-  }
 
-  ngAfterViewInit(): void {
-    this.typewriter(this.typedEl.nativeElement, this.lines);
+    this.typewriter();
   }
 
   ngOnDestroy(): void {
@@ -55,22 +60,39 @@ export class About implements OnInit, AfterViewInit, OnDestroy {
     return [...groups].map(([category, skills]) => ({ category, skills }));
   }
 
-  private typewriter(el: HTMLElement, lines: string[], speed = 70, linePause = 450): void {
-    const full = lines.join('\n');
-
+  /** Types each line character by character, pausing between lines */
+  private typewriter(speed = 70, linePause = 450): void {
     // Show everything instantly for people who prefer reduced motion
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      el.textContent = full;
+      this.typedLines.set([...this.lines]);
+      this.currentLine.set(this.lines.length - 1);
       return;
     }
 
-    let i = 0;
+    let line = 0;
+    let char = 0;
+
     const tick = () => {
-      el.textContent = full.slice(0, ++i);
-      if (i < full.length) {
-        this.timeoutId = setTimeout(tick, full[i - 1] === '\n' ? linePause : speed);
+      char++;
+      this.typedLines.update(typed => {
+        const next = [...typed];
+        next[line] = this.lines[line].slice(0, char);
+        return next;
+      });
+
+      if (char < this.lines[line].length) {
+        this.timeoutId = setTimeout(tick, speed);
+      } else if (line < this.lines.length - 1) {
+        // Finished this line: pause, move the cursor down, keep typing
+        this.timeoutId = setTimeout(() => {
+          line++;
+          char = 0;
+          this.currentLine.set(line);
+          tick();
+        }, linePause);
       }
     };
-    tick();
+
+    this.timeoutId = setTimeout(tick, 400); // short pause before typing starts
   }
 }

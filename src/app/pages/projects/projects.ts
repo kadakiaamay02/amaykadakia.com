@@ -11,11 +11,12 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PortfolioService } from '@app/services/portfolio.service';
 import { Project } from '@app/models/portfolio.model';
+import { CodeWindow } from '@app/code-window/code-window';
 
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [],
+  imports: [CodeWindow],
   templateUrl: './projects.html',
   styleUrl: './projects.scss'
 })
@@ -25,16 +26,20 @@ export class Projects implements OnInit, OnDestroy {
   projects: Project[] = [];
   selectedProject: Project | null = null;
 
+  readonly headerLines = [
+    '// Projects',
+    "// Some recent things I've built. Click a card for the details.",
+  ];
+
   private destroyRef = inject(DestroyRef);
   private lastFocused: HTMLElement | null = null;
 
   constructor(private portfolioService: PortfolioService) {}
 
   ngOnInit(): void {
-    this.portfolioService.portfolio$.subscribe(data => {
-            this.projects = data;
-        });
-
+    this.portfolioService.portfolio$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(data => this.projects = data);
   }
 
   openProject(project: Project): void {

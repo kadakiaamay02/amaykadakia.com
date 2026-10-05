@@ -24,25 +24,155 @@
 }
 
 // ============ Intro ============
-.typewriter {
-  font-family: monospace, monospace;
-  font-weight: 600;
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  line-height: 1.3;
-  color: var(--neutral-color);
-  min-height: 4lh; // reserves space for all 4 lines so the page doesn't jump while typing
-  margin: 0;
-  padding-bottom: 2rem;
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 
-  &__text { white-space: pre-line; } // turns \n into line breaks
+// ============ Editor window ============
+$editor-bg: #1b2027;   // a shade darker than the page, like an editor pane
+$chrome-bg: var(--secondary-color);
+$line-soft: color-mix(in srgb, var(--accent-color) 35%, transparent);
+
+.code-window {
+  width: 100%;
+  max-width: 640px;
+  margin-bottom: 2rem;
+  overflow: hidden;
+  text-align: left;
+  font-family: monospace, monospace;
+  background: $editor-bg;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 50%, transparent);
+  border-radius: 12px;
+  box-shadow: 8px 8px 0 var(--accent-color); // same block shadow as the cards
+
+  // Title bar with window dots
+  &__titlebar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1rem;
+    background: $chrome-bg;
+    border-bottom: 1px solid $line-soft;
+  }
+
+  &__dots {
+    position: absolute;
+    left: 1rem;
+    display: flex;
+    gap: 0.45rem;
+
+    span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    span:nth-child(1) { background: #E8A598; }
+    span:nth-child(2) { background: #E5C890; }
+    span:nth-child(3) { background: #B5C99A; }
+  }
+
+  &__title {
+    font-size: 0.85rem;
+    color: color-mix(in srgb, var(--neutral-color) 70%, transparent);
+  }
+
+  // Tab strip
+  &__tabs {
+    display: flex;
+    background: color-mix(in srgb, $editor-bg 60%, #000);
+    border-bottom: 1px solid $line-soft;
+  }
+
+  &__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.1rem;
+    font-size: 0.85rem;
+    color: var(--neutral-color);
+    background: $editor-bg;
+    border-top: 2px solid var(--neutral-color); // active tab marker
+    border-right: 1px solid $line-soft;
+  }
+
+  &__tab-icon {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent-color);
+  }
+
+  // Code area
+  &__editor {
+    padding: 1rem 0;
+    font-size: clamp(1.15rem, 2.4vw, 1.9rem);
+    font-weight: 600;
+    line-height: 1.6;
+  }
+
+  // Status bar
+  &__statusbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.3rem 1rem;
+    font-size: 0.75rem;
+    color: var(--primary-color);
+    background: var(--accent-color);
+  }
+
+  &__status-right {
+    display: flex;
+    gap: 1.25rem;
+  }
+}
+
+.code-line {
+  display: flex;
+  align-items: baseline;
+  border-left: 3px solid transparent;
+
+  // Current-line highlight, like VS Code
+  &--active {
+    background: color-mix(in srgb, var(--neutral-color) 6%, transparent);
+    border-left-color: color-mix(in srgb, var(--neutral-color) 30%, transparent);
+
+    .code-line__number { color: var(--neutral-color); }
+  }
+
+  &__number {
+    flex-shrink: 0;
+    width: 3.5rem;
+    padding-right: 1.25rem;
+    text-align: right;
+    font-weight: 400;
+    font-size: 0.7em;
+    line-height: calc(1.6 / 0.7); // keeps numbers aligned with the larger code text
+    color: color-mix(in srgb, var(--accent-color) 70%, transparent);
+    user-select: none;
+  }
+
+  &__text {
+    color: var(--neutral-color);
+    white-space: pre;
+  }
 
   &__caret {
     display: inline-block;
     width: 3px;
-    height: 1em;
-    margin-left: 4px;
-    vertical-align: -0.1em;
-    background: currentColor;
+    height: 1.1em;
+    margin-left: 2px;
+    vertical-align: -0.2em;
+    background: var(--neutral-color);
     animation: blink 1s step-end infinite;
   }
 }
@@ -138,8 +268,6 @@
 
   .intro { align-items: flex-start; }
 
-  .typewriter { padding-bottom: 1.5rem; }
-
   .bio { font-size: 1.2rem; }
 
   .skills { margin-top: 0; }
@@ -157,8 +285,19 @@
 // ============ Phones ============
 @media (max-width: 600px) {
   .skill-group { grid-template-columns: 1fr; }
+
+  .code-window {
+    box-shadow: 5px 5px 0 var(--accent-color);
+
+    &__status-right span:not(:first-child) { display: none; } // keep the status bar to one line
+  }
+
+  .code-line__number {
+    width: 2.25rem;
+    padding-right: 0.75rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .typewriter__caret { animation: none; }
+  .code-line__caret { animation: none; }
 }
