@@ -6,18 +6,20 @@
           {{ link.label }}
         </a>
       }
-    </div>
 
-    <!-- Address is visible and selectable; the link still opens an email app for people who use one -->
-    <div class="email">
-      <a class="email__address" [href]="'mailto:' + email">{{ email }}</a>
+      <!-- Looks like the links above; clicking copies the address instead of opening an email app -->
       <button
         type="button"
-        class="email__copy"
-        [class.email__copy--done]="copied"
+        class="social-icon social-icon--button"
+        [class.social-icon--done]="copied"
         (click)="copyEmail()"
-        [attr.aria-label]="copied ? 'Email address copied' : 'Copy email address'">
-        {{ copied ? 'Copied!' : 'Copy' }}
+        [title]="'Copy ' + email"
+        [attr.aria-label]="'Copy email address ' + email">
+        <!-- Both labels sit in the same spot; the hidden one keeps the width steady -->
+        <span class="swap" [class.swap--copied]="copied">
+          <span class="swap__label">Email</span>
+          <span class="swap__label" aria-hidden="true">Copied!</span>
+        </span>
       </button>
       <span class="visually-hidden" aria-live="polite">{{ copied ? 'Email address copied to clipboard' : '' }}</span>
     </div>
