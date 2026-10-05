@@ -1,27 +1,134 @@
+// ============ Login ============
+.login-page {
+  display: flex;
+  justify-content: center;
+  padding: clamp(3rem, 12vh, 7rem) 1.5rem 3rem;
+}
+
+.login-window {
+  width: 100%;
+  max-width: 640px;
+  margin-bottom: 0;
+}
+
+// The form sits inside the editor as the next numbered line,
+// using the same gutter width as the code-window line numbers.
+.login-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.35rem;
+  padding: 0.35rem 1rem 0.35rem 0;
+  border-left: 3px solid color-mix(in srgb, var(--neutral-color) 30%, transparent);
+  background: color-mix(in srgb, var(--neutral-color) 6%, transparent); // current-line highlight
+  font-family: monospace, monospace;
+
+  &__number {
+    flex-shrink: 0;
+    width: 3.25rem;
+    padding-right: 1.1rem;
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--neutral-color);
+    user-select: none;
+  }
+
+  &__code {
+    color: var(--neutral-color);
+    white-space: nowrap;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 10ch;
+    padding: 0.35rem 0.6rem;
+    font: inherit;
+    color: var(--neutral-color);
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--accent-color) 60%, transparent);
+    border-radius: 6px;
+    caret-color: var(--neutral-color);
+
+    &::placeholder {
+      color: color-mix(in srgb, var(--neutral-color) 45%, transparent);
+    }
+
+    &:hover { border-color: var(--accent-color); }
+
+    &:focus {
+      outline: none;
+      border-color: var(--neutral-color);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--neutral-color);
+      outline-offset: 2px;
+    }
+
+    &[aria-invalid='true'] { border-color: #E8A598; }
+  }
+
+  &__submit {
+    flex-shrink: 0;
+  }
+}
+
+// Syntax colours for the "const password =" line
+.tok-keyword { color: var(--accent-color); font-weight: 700; }
+.tok-punct { color: var(--accent-color); }
+
+// Error shows as the next "line", in the muted error colour
+.login-error {
+  display: flex;
+  align-items: baseline;
+  min-height: 1.7em; // keeps the window from jumping when an error appears
+  margin: 0;
+  padding: 0.25rem 1rem 0 0;
+  font-family: monospace, monospace;
+  color: #E8A598;
+
+  .login-form__number { color: color-mix(in srgb, var(--accent-color) 70%, transparent); }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// On phones the submit button drops below the input, lined up with the code
+@media (max-width: 600px) {
+  .login-form {
+    &__number { width: 2.25rem; padding-right: 0.75rem; }
+
+    &__submit {
+      margin-left: calc(2.25rem + 0.75rem);
+    }
+  }
+
+  .login-error .login-form__number { width: 2.25rem; padding-right: 0.75rem; }
+}
+
+// ============ Menu (after login) ============
 .menu-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    text-align: center;
-    padding: 0 1.5rem;
-    padding-top: clamp(4rem, 14vh, 9rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(4rem, 14vh, 9rem) 1.5rem 3rem;
+  text-align: center;
 
-    h1, h2 {
-        font-size: clamp(2.25rem, 4vw, 3.25rem);
-        margin-bottom: 0.5rem;
-    }
-
-    p {
-        font-size: 1.25rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .btn {
-        margin-top: 1.25rem;
-        width: 100%;
-        max-width: 440px;
-        padding: 1.25rem 2rem;
-        font-size: 1.35rem;
-    }
+  .btn {
+    width: 100%;
+    max-width: 440px;
+    margin-top: 1.25rem;
+    padding: 1.25rem 2rem;
+    font-size: 1.35rem;
+  }
 }

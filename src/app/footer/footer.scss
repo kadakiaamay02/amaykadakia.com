@@ -1,13 +1,13 @@
-$background: #222831;
-$secondary: #393E46;
-$accent: #948979;
-$text-cream: #DFD0B8;
+// Colors come from the global palette in styles.scss:
+// --primary-color: #222831, --secondary-color: #393E46,
+// --accent-color: #948979, --neutral-color: #DFD0B8
+$footer-bg: #181c22; // a shade darker than the page background
 
 .footer {
-  background-color: darken($background, 5%);
+  background-color: $footer-bg;
   padding: 3rem 1rem;
-  margin-top: auto; // Pushes footer to bottom if content is short
-  border-top: 1px solid rgba($secondary, 0.3);
+  margin-top: auto; // pushes the footer to the bottom if content is short
+  border-top: 1px solid color-mix(in srgb, var(--secondary-color) 60%, transparent);
 }
 
 .footer-container {
@@ -17,31 +17,114 @@ $text-cream: #DFD0B8;
 }
 
 .social-links {
-  margin-bottom: 1.5rem;
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 2rem;
+  gap: 1rem 2rem;
+  margin-bottom: 1.25rem;
 
   .social-icon {
-    color: $accent;
+    display: inline-block; // needed for the hover lift to work on a link
+    color: var(--accent-color);
     text-decoration: none;
     font-weight: bold;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: color 0.2s ease, transform 0.2s ease;
 
     &:hover {
-      color: white;
-      text-shadow: 0 0 8px $accent;
+      color: var(--neutral-color);
       transform: translateY(-2px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--neutral-color);
+      outline-offset: 4px;
+      border-radius: 2px;
     }
   }
 }
 
-.copyright {
-  p {
-    color: $accent;
+// ---------- Email + copy button ----------
+.email {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+
+  &__address {
+    color: var(--neutral-color);
+    font-size: 0.95rem;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+
+    &:hover { border-bottom-color: var(--accent-color); }
+
+    &:focus-visible {
+      outline: 2px solid var(--neutral-color);
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
+  }
+
+  &__copy {
+    min-width: 8ch; // same width for "Copy" and "Copied!" so nothing shifts
+    padding: 0.3rem 0.75rem;
+    font: inherit;
     font-size: 0.85rem;
-    letter-spacing: 1px;
-    margin: 0;
+    color: var(--neutral-color);
+    background: transparent;
+    border: 1px solid var(--accent-color);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+
+    &:hover {
+      border-color: var(--neutral-color);
+      background: color-mix(in srgb, var(--neutral-color) 8%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--neutral-color);
+      outline-offset: 2px;
+    }
+
+    // Brief confirmation state
+    &--done {
+      color: var(--primary-color);
+      background: var(--neutral-color);
+      border-color: var(--neutral-color);
+
+      &:hover { background: var(--neutral-color); }
+    }
+  }
+}
+
+.copyright p {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  color: var(--accent-color);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-links .social-icon {
+    transition: none;
+
+    &:hover { transform: none; }
   }
 }

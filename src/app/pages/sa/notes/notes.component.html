@@ -1,7 +1,7 @@
 <div class="notes-container">
 
   <header class="notes-header">
-    <h2>Notes</h2>
+    <h1>Notes</h1>
 
     <!-- Only visible on phones; desktop always shows the form -->
     <button
@@ -24,32 +24,61 @@
 
   <div class="notes-layout">
 
-    <!-- Add Note Form -->
+    <!-- Add Note Form, inside the editor window -->
     <section
       id="add-note-form"
       class="add-note"
       [class.is-open]="formOpen"
       aria-label="Add a note">
 
-      <label for="noteText">Note</label>
-      <textarea
-        id="noteText"
-        [(ngModel)]="newNote"
-        placeholder="Write a note...">
-      </textarea>
+      <app-code-window fileName="new-note.ts" [lines]="formLines" [keepCaret]="false" [compact]="true">
+        <div class="editor-form">
 
-      <label for="dueDate">Due date (optional)</label>
-      <input
-        type="date"
-        id="dueDate"
-        [(ngModel)]="newDueDate"
-      />
+          <!-- Line 3: the note -->
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true">{{ formLines.length + 1 }}</span>
+            <div class="editor-row__content">
+              <label for="noteText" class="visually-hidden">Note</label>
+              <span class="editor-row__code" aria-hidden="true">
+                <span class="tok-keyword">let</span> note <span class="tok-punct">=</span>
+              </span>
+              <textarea
+                id="noteText"
+                class="editor-field"
+                [(ngModel)]="newNote"
+                placeholder="'Write a note...'">
+              </textarea>
+            </div>
+          </div>
 
-      <div class="form-actions">
-        <button type="button" class="btn btn--primary" (click)="addNote()">Add</button>
-        <button type="button" class="btn btn--outline" (click)="addAndPrintNote()">Add & Print</button>
-        <button type="button" class="btn btn--outline" (click)="print()">Print</button>
-      </div>
+          <!-- Line 4: due date -->
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true">{{ formLines.length + 2 }}</span>
+            <div class="editor-row__content">
+              <label for="dueDate" class="visually-hidden">Due date (optional)</label>
+              <span class="editor-row__code" aria-hidden="true">
+                <span class="tok-keyword">let</span> due <span class="tok-punct">=</span>
+              </span>
+              <input
+                type="date"
+                id="dueDate"
+                class="editor-field"
+                [(ngModel)]="newDueDate" />
+            </div>
+          </div>
+
+          <!-- Line 5: actions -->
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true">{{ formLines.length + 3 }}</span>
+            <div class="editor-row__content form-actions">
+              <button type="button" class="btn btn--primary" (click)="addNote()">Add</button>
+              <button type="button" class="btn btn--outline" (click)="addAndPrintNote()">Add & Print</button>
+              <button type="button" class="btn btn--outline" (click)="print()">Print</button>
+            </div>
+          </div>
+
+        </div>
+      </app-code-window>
     </section>
 
     <!-- Notes List -->

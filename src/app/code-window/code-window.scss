@@ -155,6 +155,22 @@ $line-soft: color-mix(in srgb, var(--accent-color) 35%, transparent);
   }
 }
 
+// ---------- Compact size (sidebars, small forms) ----------
+:host(.compact) {
+  .code-window__editor {
+    padding: 0.6rem 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .code-line--title { font-size: 1.1em; }
+
+  .code-line__number {
+    width: 2.5rem;
+    padding-right: 0.85rem;
+  }
+}
+
 // Comment colouring: taupe slashes, sand text
 .tok-comment-marker { color: var(--accent-color); }
 .tok-comment { color: var(--neutral-color); }

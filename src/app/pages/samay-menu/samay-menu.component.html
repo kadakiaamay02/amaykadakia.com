@@ -1,22 +1,48 @@
+@if (!showMenu) {
+  <div class="login-page">
+    <app-code-window
+      class="login-window"
+      title="Enter password"
+      fileName="login.ts"
+      [lines]="loginLines"
+      [keepCaret]="false">
 
-<span class=" no-js ss-preload" lang="en">
+      <form class="login-form" (ngSubmit)="checkPassword()">
+        <span class="login-form__number" aria-hidden="true">{{ loginLines.length + 1 }}</span>
 
-    @if(!showMenu) {
-        <div class="login-dialog">
-            <h2>Enter Password</h2>
-            <input type="password" [(ngModel)]="password" placeholder="Password" />
-            <button (click)="checkPassword()">Login</button>
-            @if(error) {
-                <div class="error">{{ error }}</div>
-            }
-        </div>
-    }
+        <label for="samay-password" class="visually-hidden">Password</label>
+        <span class="login-form__code" aria-hidden="true">
+          <span class="tok-keyword">const</span> password <span class="tok-punct">=</span>
+        </span>
 
-    @else{
-        <div class="menu-container">
-        <a class="btn btn btn--primary " routerLink="/samay/wines">Wines</a>
-        <a class="btn btn btn--primary " routerLink="/notes">Notes</a>
-        <a class="btn btn--primary u-fullwidth" routerLink="/samay/restaurants">Restaurants</a>
-        </div>
-    }
-</span>
+        <input
+          id="samay-password"
+          name="password"
+          type="password"
+          class="login-form__input"
+          [(ngModel)]="password"
+          autocomplete="current-password"
+          placeholder="'********'"
+          [attr.aria-invalid]="error ? true : null"
+          aria-describedby="samay-login-error" />
+
+        <button type="submit" class="btn btn--primary btn--sm login-form__submit" [disabled]="checking">
+          {{ checking ? 'Checking...' : 'Run' }}
+        </button>
+      </form>
+
+      <p id="samay-login-error" class="login-error" role="alert">
+        @if (error) {
+          <span class="login-form__number" aria-hidden="true">{{ loginLines.length + 2 }}</span>
+          <span><span aria-hidden="true">// </span>{{ error }}</span>
+        }
+      </p>
+    </app-code-window>
+  </div>
+} @else {
+  <div class="menu-container">
+    <a class="btn btn--primary" routerLink="/samay/wines">Wines</a>
+    <a class="btn btn--primary" routerLink="/notes">Notes</a>
+    <a class="btn btn--primary" routerLink="/samay/restaurants">Restaurants</a>
+  </div>
+}

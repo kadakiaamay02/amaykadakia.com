@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { CodeWindow } from '@app/code-window/code-window';
 
 interface Note {
   id: number;
@@ -13,7 +14,7 @@ interface Note {
 @Component({
   selector: 'app-notes',
   standalone: true,
-  imports: [FormsModule], // CommonModule no longer needed with @if / @for
+  imports: [FormsModule, CodeWindow],
   templateUrl: './notes.component.html',
   styleUrl: './notes.component.scss'
 })
@@ -28,6 +29,11 @@ export class NotesComponent implements OnInit, OnDestroy {
   error = '';
   success = '';
   formOpen = false; // controls the form on phones
+
+  readonly formLines = [
+    '// New note',
+    '// The due date is optional',
+  ];
 
   ngOnInit(): void {
     this.loadNotes();

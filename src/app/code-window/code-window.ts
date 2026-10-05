@@ -2,29 +2,43 @@ import { Component, OnDestroy, OnInit, computed, input, signal } from '@angular/
 
 /**
  * A small VS Code-style editor window that types out a few lines.
- * Used as the page header on Experience, Education and Projects.
+ * Used as the page header on Experience, Education and Projects,
+ * and as the frame for the login form.
  *
  * <app-code-window title="Projects" fileName="projects.ts" [lines]="headerLines" />
+ *
+ * Anything placed between the tags (a form, for example) is shown
+ * below the typed lines, inside the editor:
+ *
+ * <app-code-window title="Login" fileName="login.ts" [lines]="lines" [keepCaret]="false">
+ *   <form>...</form>
+ * </app-code-window>
  */
 @Component({
   selector: 'app-code-window',
   standalone: true,
   imports: [],
   templateUrl: './code-window.html',
-  styleUrl: './code-window.scss'
+  styleUrl: './code-window.scss',
+  host: { '[class.compact]': 'compact()' }
 })
 export class CodeWindow implements OnInit, OnDestroy {
-  /** Page heading for screen readers (the window itself is decorative) */
-  title = input.required<string>();
+  /** Page heading for screen readers (the window chrome is decorative). Leave empty when the page has its own heading. */
+  title = input('');
   fileName = input.required<string>();
-  lines = input.required<string[]>();
+  lines = input<string[]>([]);
   language = input('TypeScript');
   icon = input('TS');
   speed = input(35);      // ms per character
   linePause = input(250); // ms pause at the end of each line
+  /** Keep the blinking cursor after typing finishes (turn off when the window holds an input) */
+  keepCaret = input(true);
+  /** Smaller text and gutter, for narrow spots like a sidebar */
+  compact = input(false);
 
   typedLines = signal<string[]>([]);
   currentLine = signal(0);
+  typingDone = signal(false);
   cursorCol = computed(() => (this.typedLines()[this.currentLine()] ?? '').length + 1);
 
   private timeoutId?: ReturnType<typeof setTimeout>;
@@ -36,7 +50,13 @@ export class CodeWindow implements OnInit, OnDestroy {
     // Show everything instantly for people who prefer reduced motion
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
       this.typedLines.set([...lines]);
-      this.currentLine.set(lines.length - 1);
+      this.currentLine.set(Math.max(lines.length - 1, 0));
+      this.typingDone.set(true);
+      return;
+    }
+
+    if (!lines.length) {
+      this.typingDone.set(true);
       return;
     }
 
@@ -60,6 +80,8 @@ export class CodeWindow implements OnInit, OnDestroy {
           this.currentLine.set(line);
           tick();
         }, this.linePause());
+      } else {
+        this.typingDone.set(true);
       }
     };
 
@@ -68,6 +90,11 @@ export class CodeWindow implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     clearTimeout(this.timeoutId);
+  }
+
+  /** True while the cursor should be shown on this line (always, or only while typing) */
+  isActive(index: number): boolean {
+    return index === this.currentLine() && (this.keepCaret() || !this.typingDone());
   }
 
   isComment(index: number): boolean {

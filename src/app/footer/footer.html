@@ -7,7 +7,21 @@
         </a>
       }
     </div>
-    
+
+    <!-- Address is visible and selectable; the link still opens an email app for people who use one -->
+    <div class="email">
+      <a class="email__address" [href]="'mailto:' + email">{{ email }}</a>
+      <button
+        type="button"
+        class="email__copy"
+        [class.email__copy--done]="copied"
+        (click)="copyEmail()"
+        [attr.aria-label]="copied ? 'Email address copied' : 'Copy email address'">
+        {{ copied ? 'Copied!' : 'Copy' }}
+      </button>
+      <span class="visually-hidden" aria-live="polite">{{ copied ? 'Email address copied to clipboard' : '' }}</span>
+    </div>
+
     <div class="copyright">
       <p>&copy; {{ currentYear }} Amay Kadakia. All rights reserved.</p>
     </div>

@@ -6,9 +6,7 @@
 
 :host {
   display: block;
-  padding: 3rem 0;
-  // No background or min-height needed: the page already has the dark
-  // background, and the flex layout from styles.scss handles height.
+  padding: clamp(2rem, 6vh, 3rem) 0 3rem;
 }
 
 .experience-section {
@@ -16,14 +14,6 @@
   margin: 0 auto;
   padding: 0 2rem;
 
-  .section-title {
-    font-size: 2rem;
-    color: var(--neutral-color);
-    margin-bottom: 3rem;
-    padding-bottom: 0.25rem;
-    border-bottom: 2px solid var(--accent-color);
-    display: inline-block;
-  }
 }
 
 .experience-card {
@@ -50,6 +40,7 @@
     border-bottom: 1px solid color-mix(in srgb, var(--accent-color) 35%, transparent);
 
     .role {
+      margin: 0;
       font-size: 1.5rem;
       font-weight: bold;
       color: var(--neutral-color);
@@ -81,6 +72,8 @@
       padding-left: 1.5rem;
       position: relative;
 
+      &:last-child { margin-bottom: 0; }
+
       &::before {
         content: "•";
         position: absolute;
@@ -91,6 +84,12 @@
       }
     }
   }
+}
+
+@media (max-width: 600px) {
+  .experience-section { padding: 0 1.25rem; }
+
+  .experience-card .card-header .role { font-size: 1.3rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
