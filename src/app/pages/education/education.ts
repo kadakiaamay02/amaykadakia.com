@@ -2,10 +2,11 @@ import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PortfolioService } from '@app/services/portfolio.service';
 import { Certification, EducationModel } from '@app/models/portfolio.model';
+import { CodeWindow } from '@app/code-window/code-window';
 
 @Component({
   selector: 'app-education',
-  imports: [],
+  imports: [CodeWindow],
   templateUrl: './education.html',
   styleUrl: './education.scss',
   standalone: true
@@ -13,6 +14,11 @@ import { Certification, EducationModel } from '@app/models/portfolio.model';
 export class Education implements OnInit {
   degrees: EducationModel[] = [];
   certifications: Certification[] = [];
+
+  readonly headerLines = [
+    '// Education & Certifications',
+    '// Degrees, coursework, and credentials',
+  ];
 
   private destroyRef = inject(DestroyRef);
 

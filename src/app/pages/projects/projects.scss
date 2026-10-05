@@ -9,28 +9,13 @@ $text-dim: color-mix(in srgb, var(--neutral-color) 75%, transparent);
 
 :host {
   display: block;
-  padding: 3rem 0;
+  padding: clamp(2rem, 6vh, 3rem) 0 3rem;
 }
 
 .projects-section {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
-
-  .section-title {
-    display: inline-block;
-    margin: 0 0 1rem;
-    padding-bottom: 0.25rem;
-    font-size: 2rem;
-    color: var(--neutral-color);
-    border-bottom: 2px solid var(--accent-color);
-  }
-
-  .intro {
-    margin: 0 0 2.5rem;
-    font-size: 1.1rem;
-    color: $text-dim;
-  }
 }
 
 .projects-grid {
@@ -105,7 +90,7 @@ $text-dim: color-mix(in srgb, var(--neutral-color) 75%, transparent);
     box-shadow: 12px 12px 0 var(--neutral-color);
   }
 
- .card-image {
+  .card-image {
     height: 180px;
     padding: 1.25rem;
     display: flex;

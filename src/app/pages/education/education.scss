@@ -19,15 +19,20 @@
   padding: 0 2rem;
 }
 
+// The editor header spans both columns on wide screens
+app-code-window {
+  grid-column: 1 / -1;
+}
+
 .column + .column {
   margin-top: 2rem;
 }
 
 .section-title {
   display: inline-block;
-  margin: 0 0 2.5rem;
+  margin: 0 0 2rem;
   padding-bottom: 0.25rem;
-  font-size: 2rem;
+  font-size: 1.6rem;
   color: var(--neutral-color);
   border-bottom: 2px solid var(--accent-color);
 }
@@ -130,7 +135,7 @@
   .education-page {
     display: grid;
     grid-template-columns: 1.3fr 1fr; // degrees have longer text, so they get more room
-    gap: 4rem;
+    gap: 0 4rem;
     align-items: start;
     max-width: 1350px;
     padding: 0 3rem;
