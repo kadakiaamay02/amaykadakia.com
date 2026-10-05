@@ -1,0 +1,31 @@
+<div class="tic-tac-toe-container">
+  <h1>Tic-Tac-Toe</h1>
+
+  @if(!gameStarted) {
+    <div class="game-mode-selector">
+      <h2>Choose Game Mode:</h2>
+      <button class="btn btn--outline selector" (click)="setGameMode('human')">Human vs. Human</button>
+      <button class="btn btn--outline selector" (click)="setGameMode('machine')">Human vs. Machine</button>
+    </div>
+  } 
+
+  <div *ngIf="gameStarted">
+    <div class="status" *ngIf="!winner">Current Player: {{ currentPlayer }}</div>
+    <div class="status"
+         *ngIf="winner">{{ winner === 'X' ? 'You Win!' : 'You Lose!' }}</div>
+    <div class="status" *ngIf="!winner && isBoardFull()">It's a draw!</div>
+
+
+    <div class="board">
+      <div class="cell" *ngFor="let cell of board; let i = index" (click)="makeMove(i)">
+        {{ cell }}
+      </div>
+
+      <div class="about-info__text">
+        <button class="btn btn--outline" (click)="toggleMode()">Change Mode ({{ gameMode === 'human' ? 'Human vs. Human' : 'Human vs. Machine' }})</button>
+        @if(this.isBoardFull() || winner) {
+          <button class="btn btn--outline" (click)="resetGame()">New Game</button>
+        }
+      </div>
+  </div>
+</div>

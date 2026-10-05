@@ -1,0 +1,155 @@
+// Uses the global palette from styles.scss:
+// --primary-color:   #222831  page background
+// --secondary-color: #393E46  card surface
+// --accent-color:    #948979  borders, shadows, bullets
+// --neutral-color:   #DFD0B8  text
+
+:host {
+  display: block;
+  padding: clamp(2rem, 6vh, 3rem) 0 3rem;
+}
+
+// ============ Layout ============
+// Phones and tablets: one column, certifications below degrees.
+// Wide screens (1100px+): degrees left, certifications right.
+
+.education-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.column + .column {
+  margin-top: 2rem;
+}
+
+.section-title {
+  display: inline-block;
+  margin: 0 0 2.5rem;
+  padding-bottom: 0.25rem;
+  font-size: 2rem;
+  color: var(--neutral-color);
+  border-bottom: 2px solid var(--accent-color);
+}
+
+// ============ Cards ============
+.experience-card {
+  background: var(--secondary-color);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 40%, transparent);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 8px 8px 0 var(--accent-color); // retro block shadow
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 12px 12px 0 var(--neutral-color);
+  }
+
+  .card-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--accent-color) 35%, transparent);
+
+    .degree {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--neutral-color);
+    }
+
+    .period {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: color-mix(in srgb, var(--neutral-color) 75%, transparent);
+    }
+  }
+
+  .school {
+    color: color-mix(in srgb, var(--neutral-color) 80%, transparent);
+    font-size: 1.1rem;
+    font-style: italic;
+    margin: 0.75rem 0 1rem;
+  }
+
+  .description-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      color: var(--neutral-color);
+      line-height: 1.7;
+      margin-bottom: 0.8rem;
+      padding-left: 1.5rem;
+      position: relative;
+
+      &:last-child { margin-bottom: 0; }
+
+      &::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: var(--accent-color);
+        font-size: 1.5rem;
+        line-height: 1;
+      }
+    }
+  }
+
+  // When a card has no school line, give the list some space below the header
+  .card-header + .description-list {
+    margin-top: 1rem;
+  }
+}
+
+// Certification links
+.cert-list a {
+  color: var(--neutral-color);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-color);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s;
+
+  &:hover { text-decoration-color: var(--neutral-color); }
+
+  &:focus-visible {
+    outline: 2px solid var(--neutral-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+// ============ Wide screens: two columns ============
+@media (min-width: 1100px) {
+  .education-page {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr; // degrees have longer text, so they get more room
+    gap: 4rem;
+    align-items: start;
+    max-width: 1350px;
+    padding: 0 3rem;
+  }
+
+  .column + .column { margin-top: 0; }
+}
+
+// ============ Phones ============
+@media (max-width: 600px) {
+  .education-page { padding: 0 1.25rem; }
+
+  .experience-card .card-header .degree { font-size: 1.3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-card {
+    transition: none;
+
+    &:hover { transform: none; }
+  }
+}

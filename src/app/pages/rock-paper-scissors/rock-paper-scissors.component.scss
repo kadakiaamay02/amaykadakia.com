@@ -1,0 +1,129 @@
+/* General container for the game content */
+.test {
+  padding-top: 1rem; /* Reduced from 20rem */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h3 {
+  color: var(--accent-color);
+  font-weight: lighter;
+}
+
+.flash-result {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem;
+  min-height: 3rem;
+}
+
+.flash-text {
+  font-size: 1.5rem;
+  text-align: center;
+  font-weight: 100;
+  color: var(--accent-color);
+  animation: flash 0.9s ease-out;
+}
+
+@keyframes flash {
+  0%   { opacity: 0; transform: scale(0.85); }
+  20%  { opacity: 1; transform: scale(1.1); }
+  40%  { opacity: 0.4; }
+  60%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash-text { animation: none; }
+}
+
+.scorecard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.scorecard h2 {
+  margin: 0.5rem 1rem;
+  font-size: 1.2rem;
+}
+
+.emojis {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem; /* Reduced from 25rem */
+}
+
+.emoji {
+  font-size: 8rem; /* Using rem for more predictable sizing */
+  cursor: pointer;
+  margin: 1rem; /* Simplified margin */
+}
+
+.emoji:hover {
+  transform: scale(1.2); /* Enlarge emoji on hover */
+}
+
+.button {
+  display: flex;
+  justify-content: center;
+  margin-top: 10rem; /* Reduced from 15rem */
+}
+
+.reset-button {
+  font-size: 1em;
+  cursor: pointer;
+  background-color: #f44336;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  margin-bottom: 10rem;
+}
+
+/* Responsive adjustments for smaller screens */
+@media screen and (max-width: 500px) {
+  .test {
+    padding-top: 2rem;
+  }
+
+  .scorecard h2 {
+    font-size: 2rem;
+  }
+
+  .emojis {
+    margin-top: 1rem;
+  }
+  
+  .emoji {
+    font-size: 6rem; /* Make emojis a bit smaller on small screens */
+    margin: 0.5rem;
+  }
+
+  .button {
+    margin-top: 20rem;
+  }
+}
+
+/* Universal font setting */
+* {
+  font-family: monospace, monospace;
+}
+
+
+.rps-header {
+  text-align: center;
+  margin-top: 2rem;
+  font-weight: lighter;
+  padding-top: 5rem;
+  font-size: 5rem !important; /* Using rem for scalable font size */
+}
+
+:host ::ng-deep .about-info.row {
+  width: auto;
+}

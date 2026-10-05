@@ -1,0 +1,89 @@
+<div class="notes-container">
+
+  <header class="notes-header">
+    <h2>Notes</h2>
+
+    <!-- Only visible on phones; desktop always shows the form -->
+    <button
+      type="button"
+      class="btn btn--primary add-toggle"
+      (click)="formOpen = !formOpen"
+      [attr.aria-expanded]="formOpen"
+      aria-controls="add-note-form">
+      {{ formOpen ? 'Close' : 'Add a note' }}
+    </button>
+  </header>
+
+  <!-- Success / Error Messages -->
+  @if (error) {
+    <div class="error" role="alert">{{ error }}</div>
+  }
+  @if (success) {
+    <div class="success" role="status">{{ success }}</div>
+  }
+
+  <div class="notes-layout">
+
+    <!-- Add Note Form -->
+    <section
+      id="add-note-form"
+      class="add-note"
+      [class.is-open]="formOpen"
+      aria-label="Add a note">
+
+      <label for="noteText">Note</label>
+      <textarea
+        id="noteText"
+        [(ngModel)]="newNote"
+        placeholder="Write a note...">
+      </textarea>
+
+      <label for="dueDate">Due date (optional)</label>
+      <input
+        type="date"
+        id="dueDate"
+        [(ngModel)]="newDueDate"
+      />
+
+      <div class="form-actions">
+        <button type="button" class="btn btn--primary" (click)="addNote()">Add</button>
+        <button type="button" class="btn btn--outline" (click)="addAndPrintNote()">Add & Print</button>
+        <button type="button" class="btn btn--outline" (click)="print()">Print</button>
+      </div>
+    </section>
+
+    <!-- Notes List -->
+    <section class="notes-list" aria-label="Your notes">
+      @for (note of notes; track note.id) {
+        <article class="note-card" [class.note-card--undated]="!note.due_date">
+          <div class="note-header">
+            <p class="note-content">{{ note.content }}</p>
+
+            <div class="note-actions">
+              <button
+                type="button"
+                class="icon-btn"
+                (click)="printNote(note.id)"
+                aria-label="Print note"
+                title="Print">🖨️</button>
+              <button
+                type="button"
+                class="icon-btn"
+                (click)="deleteNote(note.id)"
+                aria-label="Delete note"
+                title="Delete">🗑️</button>
+            </div>
+          </div>
+
+          @if (note.due_date) {
+            <span class="due-date">📅 Due: {{ note.due_date }}</span>
+          }
+          <span class="timestamp">Added: {{ note.created_at }}</span>
+        </article>
+      } @empty {
+        <p class="empty-state">No notes yet. Write one to get started.</p>
+      }
+    </section>
+
+  </div>
+</div>

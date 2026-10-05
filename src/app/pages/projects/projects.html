@@ -1,0 +1,101 @@
+<section class="projects-section">
+  <h2 class="section-title">Projects</h2>
+  <p class="intro">Here are some of my recent projects. Feel free to check them out.</p>
+
+  <div class="projects-grid">
+    @for (project of projects; track project.id) {
+      <article class="project-card">
+        @if (project.image) {
+          <div class="card-image">
+            <img [src]="project.image" alt="" loading="lazy" />
+          </div>
+        }
+
+        <div class="card-body">
+          <div class="card-header">
+            <h3 class="title">
+              <!-- This button covers the whole card, so clicking anywhere opens the details -->
+              <button type="button" class="card-open" (click)="openProject(project)">
+                {{ project.title }}
+              </button>
+            </h3>
+            <span class="category">{{ project.category }}</span>
+          </div>
+
+          <p class="description">{{ project.description }}</p>
+
+          @if (project.tags.length) {
+            <ul class="tags" aria-label="Technologies">
+              @for (tag of project.tags; track tag) {
+                <li class="tag">{{ tag }}</li>
+              }
+            </ul>
+          }
+        </div>
+      </article>
+    } @empty {
+      <p class="empty-state">Projects are loading.</p>
+    }
+  </div>
+</section>
+
+<!-- Project details modal -->
+@if (selectedProject; as project) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div
+      class="modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      (click)="$event.stopPropagation()">
+
+      <button #closeBtn type="button" class="modal-close" (click)="closeModal()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      @if (project.image) {
+        <div class="modal-image">
+          <img [src]="project.image" [alt]="project.title" />
+        </div>
+      }
+
+      <div class="modal-body">
+        <div class="card-header" [class.card-header--no-image]="!project.image">
+          <h2 id="modal-title" class="title">{{ project.title }}</h2>
+          <span class="category">{{ project.category }}</span>
+        </div>
+
+        <!-- Long details if provided, otherwise the short card description -->
+        <p class="description">{{ project.details || project.description }}</p>
+
+        @if (project.tags.length) {
+          <ul class="tags" aria-label="Technologies">
+            @for (tag of project.tags; track tag) {
+              <li class="tag">{{ tag }}</li>
+            }
+          </ul>
+        }
+
+        @if (project.link || project.githubLink) {
+          <div class="modal-footer">
+            @if (project.link) {
+              <a class="btn btn--primary" [href]="project.link" target="_blank" rel="noopener noreferrer">
+                View project
+                <svg width="16" height="16" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+                  <path d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"/>
+                </svg>
+              </a>
+            }
+            @if (project.githubLink) {
+              <a class="btn btn--outline" [href]="project.githubLink" target="_blank" rel="noopener noreferrer">
+                View code on GitHub
+              </a>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

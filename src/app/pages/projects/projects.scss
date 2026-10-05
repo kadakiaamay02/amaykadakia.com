@@ -1,0 +1,288 @@
+// Uses the global palette from styles.scss:
+// --primary-color:   #222831  page background
+// --secondary-color: #393E46  card surface
+// --accent-color:    #948979  borders, shadows
+// --neutral-color:   #DFD0B8  text
+
+$border-soft: color-mix(in srgb, var(--accent-color) 40%, transparent);
+$text-dim: color-mix(in srgb, var(--neutral-color) 75%, transparent);
+
+:host {
+  display: block;
+  padding: 3rem 0;
+}
+
+.projects-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+
+  .section-title {
+    display: inline-block;
+    margin: 0 0 1rem;
+    padding-bottom: 0.25rem;
+    font-size: 2rem;
+    color: var(--neutral-color);
+    border-bottom: 2px solid var(--accent-color);
+  }
+
+  .intro {
+    margin: 0 0 2.5rem;
+    font-size: 1.1rem;
+    color: $text-dim;
+  }
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+// ---------- Shared card pieces (used by both the grid cards and the modal) ----------
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-color) 35%, transparent);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--neutral-color);
+}
+
+.category {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text-dim;
+}
+
+.description {
+  margin: 0 0 1.25rem;
+  line-height: 1.7;
+  color: var(--neutral-color);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.875rem;
+  color: var(--neutral-color);
+  border: 1px solid var(--accent-color);
+  border-radius: 999px;
+}
+
+// ---------- Grid card (same look as the experience cards) ----------
+.project-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--secondary-color);
+  border: 1px solid $border-soft;
+  border-radius: 15px;
+  box-shadow: 8px 8px 0 var(--accent-color);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover,
+  &:focus-within {
+    transform: translate(-4px, -4px);
+    box-shadow: 12px 12px 0 var(--neutral-color);
+  }
+
+ .card-image {
+    height: 180px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-color);
+    border-bottom: 1px solid $border-soft;
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+  }
+
+  .card-body {
+    flex: 1;
+    padding: 1.5rem;
+  }
+
+  .title { font-size: 1.3rem; }
+}
+
+// Title button stretched over the whole card
+.card-open {
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      outline: 2px solid var(--neutral-color);
+      outline-offset: -4px;
+      border-radius: 15px;
+    }
+  }
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--accent-color);
+}
+
+// ---------- Modal ----------
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(34, 40, 49, 0.85);
+  backdrop-filter: blur(3px);
+  animation: fade-in 0.2s ease-out;
+}
+
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--secondary-color);
+  border: 1px solid $border-soft;
+  border-radius: 15px;
+  box-shadow: 8px 8px 0 var(--accent-color);
+  animation: lift-in 0.3s ease-out;
+
+  .description { margin-bottom: 1.5rem; }
+  .tags { margin-bottom: 1.5rem; }
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: var(--neutral-color);
+  background: var(--secondary-color);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 50%, transparent);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+
+  &:hover {
+    border-color: var(--neutral-color);
+    background: var(--primary-color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--neutral-color);
+    outline-offset: 2px;
+  }
+}
+
+.modal-image {
+  height: 280px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-color);
+  border-bottom: 1px solid $border-soft;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+// Keeps the title clear of the close button when there's no image
+.card-header--no-image {
+  padding-right: 3rem;
+}
+
+.modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--accent-color) 35%, transparent);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes lift-in {
+  from { opacity: 0; transform: translate(4px, 12px); }
+}
+
+// ---------- Phones ----------
+@media (max-width: 600px) {
+  .projects-section { padding: 0 1.25rem; }
+  .projects-grid { grid-template-columns: 1fr; }
+
+  .modal-overlay { padding: 1rem; }
+  .modal-image { height: 200px; }
+  .modal-body { padding: 1.25rem; }
+  .modal-card .title { font-size: 1.3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-card { transition: none; }
+  .project-card:hover,
+  .project-card:focus-within { transform: none; }
+  .modal-overlay,
+  .modal-card { animation: none; }
+}
