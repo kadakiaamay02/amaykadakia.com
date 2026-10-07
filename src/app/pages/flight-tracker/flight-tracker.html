@@ -1,41 +1,164 @@
-<div class="login-page">
-    <app-code-window
-      class="login-window"
-      title="Enter flight number"
-      fileName="tracker.ts"
-      [lines]="TrackerLines"
-      [keepCaret]="false">
+<div class="tracker-page">
+  <app-code-window
+    class="tracker-window"
+    title="Flight tracker"
+    fileName="tracker.ts"
+    [lines]="trackerLines"
+    [keepCaret]="false">
 
-      <form class="login-form" (ngSubmit)="checkFlightNumber()">
-        <span class="login-form__number" aria-hidden="true">{{ TrackerLines.length + 1 }}</span>
+    <form class="code-form" (ngSubmit)="checkFlightNumber()">
+      <span class="code-form__number" aria-hidden="true">{{ trackerLines.length + 1 }}</span>
 
-        <label for="samay-password" class="visually-hidden">Flight Number</label>
-        <span class="login-form__code" aria-hidden="true">
-          <span class="tok-keyword">let</span> flightNumber <span class="tok-punct">=</span>
-        </span>
+      <label for="flight-number" class="visually-hidden">Flight number</label>
+      <span class="code-form__code" aria-hidden="true">
+        <span class="tok-keyword">let</span> flightNumber <span class="tok-punct">=</span>
+      </span>
 
-        <input
-          id="samay-password"
-          name="flightNumber"
-          type="flightNumber"
-          class="login-form__input"
-          [(ngModel)]="flightNumber"
-          autocomplete="current-password"
-          placeholder="'********'"
-          [attr.aria-invalid]="error ? true : null"
-          aria-describedby="samay-login-error" />
+      <input
+        id="flight-number"
+        name="flightNumber"
+        type="text"
+        class="code-form__input"
+        [(ngModel)]="flightNumber"
+        autocomplete="off"
+        autocapitalize="characters"
+        spellcheck="false"
+        placeholder="'AA1234'"
+        [attr.aria-invalid]="error ? true : null"
+        aria-describedby="tracker-status" />
 
-        <button type="submit" class="btn btn--primary btn--sm login-form__submit" [disabled]="Tracking" >
-           {{ Tracking ? 'Tracking...' : 'Track' }}
-        </button>
-      </form>
+      <button type="submit" class="btn btn--primary btn--sm code-form__submit" [disabled]="tracking">
+        {{ tracking ? 'Pinning...' : 'Track' }}
+      </button>
+    </form>
 
-            <p id="samay-login-error" class="login-error" role="alert">
-        @if (error) {
-          <span class="login-form__number" aria-hidden="true">{{ TrackerLines.length + 2 }}</span>
-          <span><span aria-hidden="true">// </span>{{ error }}</span>
+    <!-- Result of the last action, shown as the next "line" -->
+    <p id="tracker-status" class="code-status" role="status">
+      @if (error) {
+        <span class="code-form__number" aria-hidden="true">{{ trackerLines.length + 2 }}</span>
+        <span class="code-status__text code-status__text--error"><span aria-hidden="true">// </span>{{ error }}</span>
+      } @else if (message) {
+        <span class="code-form__number" aria-hidden="true">{{ trackerLines.length + 2 }}</span>
+        <span class="code-status__text code-status__text--ok"><span aria-hidden="true">// </span>{{ message }}</span>
+      }
+    </p>
+  </app-code-window>
+
+  <!-- Pinned flights -->
+  <section class="pinned" aria-labelledby="pinned-title">
+    <div class="pinned__header">
+      <h2 id="pinned-title" class="pinned__title">Pinned flights</h2>
+      <button type="button" class="btn btn--ghost btn--sm" (click)="loadPinned()" [disabled]="loadingPinned">
+        {{ loadingPinned ? 'Refreshing...' : 'Refresh' }}
+      </button>
+    </div>
+
+    @if (loadingPinned && !pinned.length) {
+      <p class="pinned__empty">Loading pinned flights...</p>
+    } @else {
+      <ul class="pinned__list">
+        @for (f of pinned; track f.key) {
+          <li class="flight-card">
+            <!-- Header: flight number, airline, status -->
+            <div class="flight-card__header">
+              <div>
+                <h3 class="flight-card__flight">{{ f.flight }}</h3>
+                @if (f.airline) {
+                  <p class="flight-card__airline">{{ f.airline }}</p>
+                }
+              </div>
+              <span class="status" [attr.data-status]="f.status">
+                <span class="status__dot" aria-hidden="true"></span>
+                {{ f.statusLabel }}
+              </span>
+            </div>
+
+            <!-- Route: codes big, cities underneath, progress along the line -->
+            @if (f.origin || f.destination) {
+              <div class="route">
+                <div class="route__end">
+                  <span class="route__code">{{ f.origin || '?' }}</span>
+                  @if (f.originName) { <span class="route__name">{{ f.originName }}</span> }
+                </div>
+
+                <div class="route__track" aria-hidden="true">
+                  <span class="route__line"></span>
+                  @if (f.progress !== undefined) {
+                    <span class="route__done" [style.width.%]="f.progress"></span>
+                    <span class="route__plane" [style.left.%]="f.progress">✈</span>
+                  } @else {
+                    <span class="route__plane route__plane--center">✈</span>
+                  }
+                </div>
+                <span class="visually-hidden">
+                  to @if (f.progress !== undefined) { ({{ f.progress }}% of the way) }
+                </span>
+
+                <div class="route__end route__end--right">
+                  <span class="route__code">{{ f.destination || '?' }}</span>
+                  @if (f.destinationName) { <span class="route__name">{{ f.destinationName }}</span> }
+                </div>
+              </div>
+            }
+
+            <!-- ETA -->
+            @if (f.eta || f.remaining || f.arrived) {
+              <div class="eta">
+                @if (f.arrived) {
+                  <span class="eta__time">Arrived</span>
+                } @else if (f.eta) {
+                  <span class="eta__label">ETA</span>
+                  <span class="eta__time" title="Straight-line estimate from current speed">~{{ f.eta }}</span>
+                  <span class="eta__in">{{ f.etaIn }}</span>
+                }
+                @if (f.remaining) { <span class="eta__left">{{ f.remaining }}</span> }
+              </div>
+            }
+
+            @if (f.phase || f.event) {
+              <p class="flight-card__phase">
+                @if (f.phase) { <span>{{ f.phase }}</span> }
+                @if (f.event) { <span>{{ f.event }}</span> }
+              </p>
+            }
+
+            <!-- Live position stats (airborne only) -->
+            @if (f.stats.length) {
+              <dl class="stats">
+                @for (s of f.stats; track s.label) {
+                  <div class="stats__item" [attr.title]="s.hint || null">
+                    <dt class="stats__label">{{ s.label }}</dt>
+                    <dd class="stats__value">
+                      {{ s.value }}
+                      @if (s.hint) { <span class="visually-hidden">({{ s.hint }})</span> }
+                    </dd>
+                  </div>
+                }
+              </dl>
+            }
+
+            <!-- Footer: aircraft, tail, freshness, unpin -->
+            <div class="flight-card__footer">
+              <p class="flight-card__meta">
+                @if (f.aircraft) { <span>{{ f.aircraft }}</span> }
+                @if (f.tail) { <span>{{ f.tail }}</span> }
+                @if (f.lastSeen) { <span>Updated {{ f.lastSeen }}</span> }
+              </p>
+
+              <button
+                type="button"
+                class="btn btn--outline btn--sm flight-card__remove"
+                (click)="removePin(f)"
+                [disabled]="removing.has(f.key)"
+                [attr.aria-label]="'Unpin ' + f.flight">
+                {{ removing.has(f.key) ? 'Removing...' : 'Unpin' }}
+              </button>
+            </div>
+          </li>
+        } @empty {
+          <li class="pinned__empty">No pinned flights yet. Track one above.</li>
         }
-      </p>
-
-    </app-code-window>
-  </div>
+      </ul>
+    }
+  </section>
+</div>
