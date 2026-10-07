@@ -24,6 +24,7 @@ interface PinResponse {
   imports: [FormsModule, CodeWindow],
   templateUrl: './flight-tracker.html',
   styleUrl: './flight-tracker.scss',
+  standalone: true
 })
 export class FlightTracker {
 
