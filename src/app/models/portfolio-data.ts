@@ -104,6 +104,18 @@ export const EXPERIENCE_DATA: WorkExperience[] = [
     period: "October 2025 - Present",
     description: [
       "Responsible for maintaining an enterprise-wide Angular monorepo used across multiple business units, ensuring code quality, consistency, and seamless integration of new features and updates.",
+      "Led frontend development efforts for strategic initiatives partnering with Product, Design, and engineering teams to deliver complex user experiences and integrations.",
+      "Designed and implemented reusable platform capabilities, including custom state management/store solutions, feature flag integrations, request interception frameworks, and shared application infrastructure.",
+      "Modernized Angular application architecture by driving adoption of standalone components and updating code generation tooling to align with latest Angular standards and best practices.",
+      "Enhanced developer productivity through onboarding automation, application scaffolding improvements, schema library updates, and support for numerous API and application integrations.",
+      "Developed and documented foundational platform services, including Interceptor integrations, SharedCoreHostService enhancements, and experience configuration frameworks used across multiple applications.",
+      "Championed code quality and engineering excellence by authoring custom linting rules, improving test standards, conducting extensive peer reviews, and contributing hundreds of merged pull requests.",
+      "Built tooling and automation solutions including Jenkins build failure notifications, long-lived branch monitoring, PR scoring enhancements, and CI/CD workflow improvements.",
+      "Delivered accessibility improvements, navigation integrations, content management integrations, and responsive UI implementations for customer-facing applications.",
+      "Provided technical consulting and architectural guidance to development teams on platform integrations, cloud application patterns, feature implementations, and frontend best practices.",
+      "Recognized as a trusted cross-functional contributor, frequently selected to lead ambiguous initiatives, unblock teams, and drive delivery across multiple concurrent workstreams.",
+      "Mentored early-career associates, supported internship and mentorship programs, and actively contributed to engineering community initiatives through code reviews, office hours, and technical knowledge sharing.",
+      "Impact over January - June 2026: Delivered 64 completed stories and approximately 150 story points across key platform and product initiatives. Authored 127+ merged pull requests and reviewed 295+ pull requests, ranking among the top code reviewers on the team. Contributed 16-18% of team delivery capacity while supporting multiple enterprise teams and product areas simultaneously."
     ],
   },
   {
