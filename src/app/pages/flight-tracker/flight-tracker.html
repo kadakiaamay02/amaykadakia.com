@@ -1,0 +1,34 @@
+<div class="login-page">
+    <app-code-window
+      class="login-window"
+      title="Enter flight number"
+      fileName="tracker.ts"
+      [lines]="TrackerLines"
+      [keepCaret]="false">
+
+      <form class="login-form" (ngSubmit)="checkFlightNumber()">
+        <span class="login-form__number" aria-hidden="true">{{ TrackerLines.length + 1 }}</span>
+
+        <label for="samay-password" class="visually-hidden">Flight Number</label>
+        <span class="login-form__code" aria-hidden="true">
+          <span class="tok-keyword">let</span> flightNumber <span class="tok-punct">=</span>
+        </span>
+
+        <input
+          id="samay-password"
+          name="flightNumber"
+          type="flightNumber"
+          class="login-form__input"
+          [(ngModel)]="flightNumber"
+          autocomplete="current-password"
+          placeholder="'********'"
+          [attr.aria-invalid]="error ? true : null"
+          aria-describedby="samay-login-error" />
+
+        <button type="submit" class="btn btn--primary btn--sm login-form__submit" [disabled]="Tracking" >
+           {{ Tracking ? 'Tracking...' : 'Track' }}
+        </button>
+      </form>
+
+    </app-code-window>
+  </div>

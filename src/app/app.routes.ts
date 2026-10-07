@@ -12,6 +12,7 @@ import {Experience} from './pages/experience/experience';
 import {Education} from './pages/education/education';
 import { GamesMenu } from './pages/games-menu/games-menu';
 import { Projects } from './pages/projects/projects';
+import { FlightTracker } from './pages/flight-tracker/flight-tracker';
 
 
 export const routes: Routes = [
@@ -29,5 +30,6 @@ export const routes: Routes = [
   { path: 'samay/restaurants', component: RestaurantListComponent, canActivate: [samayGuard] },
   { path: 'notes', component: NotesComponent, canActivate: [samayGuard] },
   { path: 'admin/dashboard', component: Dashboard },
+  { path: 'flight-tracker', component: FlightTracker },
   { path: '**', redirectTo: '/about', pathMatch: 'full' },
 ];

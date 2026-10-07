@@ -1,232 +1,30 @@
-// Matches the main nav: same width, same hairline borders, same tracked caps
-$line: rgba(255, 255, 255, 0.08);
-$text: #ffffff;
-$muted: rgba(255, 255, 255, 0.5);
-$accent: #e6a15a; // the orange already used on the Refresh text
-$bg: #151618;
-
-:host {
-	display: block;
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 12px;
 }
 
-.dashboard-root {
-	width: 100%;
-	max-width: 1400px; // same as the main nav (.row.wide)
-	margin: 0 auto;
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
 }
 
-/* ---------- Sub-navbar ---------- */
+th {
+  background: #f4f4f4;
+}
+
+.level-info { color: #2c7; }
+.level-warn { color: #f0ad4e; }
+.level-error { color: #d9534f; }
+
 .controls {
-	display: flex;
-	align-items: stretch;
-	flex-wrap: wrap;
-	min-height: 48px;
-	margin: 0;
-	border: 1px solid $line;
-	border-top: none; // attaches it to the bottom of the main nav
-	background: $bg;
-	font-size: 10px;
-	font-weight: 600;
-	letter-spacing: 0.3em;
-	text-transform: uppercase;
-	color: $text;
-
-	// each control is a nav "cell" separated by a vertical rule
-	> label,
-	> button {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		margin: 0;
-		padding: 0 24px;
-		border: none;
-		border-right: 1px solid $line;
-		font: inherit;
-		letter-spacing: inherit;
-		text-transform: inherit;
-		color: inherit;
-		line-height: 1;
-	}
-
-	// overrides the theme's large block button
-	> button {
-		height: auto;
-		background: transparent;
-		border-radius: 0;
-		color: $accent;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-
-		&:hover:not(:disabled) {
-			background: rgba(255, 255, 255, 0.04);
-		}
-
-		&:disabled {
-			opacity: 0.4;
-			cursor: default;
-		}
-
-		&:focus-visible {
-			outline: 1px solid $accent;
-			outline-offset: -6px;
-		}
-	}
-
-	// overrides the theme's full-height form input
-	input[type='number'] {
-		width: 64px;
-		height: 28px;
-		margin: 0;
-		padding: 0 6px;
-		background: transparent;
-		border: none;
-		border-bottom: 1px solid $line;
-		border-radius: 0;
-		color: $text;
-		font-size: 12px;
-		letter-spacing: 0;
-		-moz-appearance: textfield;
-
-		&:focus {
-			outline: none;
-			border-bottom-color: $accent;
-		}
-	}
-
-	input[type='checkbox'] {
-		width: 14px;
-		height: 14px;
-		margin: 0;
-		accent-color: $accent;
-		cursor: pointer;
-	}
-
-	.auto {
-		cursor: pointer;
-	}
-
-	.status {
-		display: flex;
-		align-items: center;
-		margin-left: auto;
-		padding: 0 24px;
-		color: $muted;
-		letter-spacing: 0.15em;
-	}
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
-/* ---------- Events table (dark theme) ---------- */
-.events-table {
-	width: calc(100% - 48px);
-	margin: 32px 24px;
-	border-collapse: collapse;
-	font-size: 13px;
-	color: $text;
-
-	th,
-	td {
-		padding: 10px 8px;
-		border-bottom: 1px solid $line;
-		text-align: left;
-		vertical-align: top;
-	}
-
-	th {
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0.3em;
-		text-transform: uppercase;
-		color: $muted;
-	}
-
-	.level {
-		padding: 4px 8px;
-		border-radius: 4px;
-		color: #fff;
-		text-transform: uppercase;
-		font-weight: 600;
-		font-size: 11px;
-	}
-	.info { background: #2b8cff; }
-	.warn { background: #ff8c00; }
-	.error { background: #e03b3b; }
-	.unknown { background: #777; }
-
-	.data-cell {
-		button {
-			height: auto;
-			margin: 0;
-			padding: 4px 10px;
-			background: transparent;
-			border: 1px solid $line;
-			border-radius: 0;
-			color: $accent;
-			font-size: 10px;
-			letter-spacing: 0.2em;
-			line-height: 1.4;
-			text-transform: uppercase;
-			cursor: pointer;
-		}
-
-		pre {
-			max-height: 300px;
-			margin: 8px 0 0;
-			overflow: auto;
-			padding: 8px;
-			background: rgba(255, 255, 255, 0.04);
-			border-radius: 4px;
-			color: $text;
-			font-size: 12px;
-		}
-	}
-}
-
-.no-events {
-	padding: 48px 24px;
-	text-align: center;
-	color: $muted;
-}
-
-/* ---------- Mobile ---------- */
-@media (max-width: 700px) {
-	.controls {
-		> label,
-		> button {
-			flex: 1 1 auto;
-			justify-content: center;
-			min-height: 44px;
-			border-bottom: 1px solid $line;
-		}
-
-		.status {
-			flex-basis: 100%;
-			justify-content: center;
-			margin-left: 0;
-			padding: 10px;
-		}
-	}
-
-	.events-table,
-	.events-table thead,
-	.events-table tbody,
-	.events-table th,
-	.events-table td,
-	.events-table tr {
-		display: block;
-	}
-	.events-table {
-		width: auto;
-		margin: 16px;
-	}
-	.events-table thead {
-		display: none;
-	}
-	.events-table tr {
-		margin-bottom: 12px;
-		border-bottom: 1px solid $line;
-	}
-	.events-table td {
-		border: none;
-		padding: 6px 0;
-	}
+pre {
+  margin: 0;
+  white-space: pre-wrap;
 }
