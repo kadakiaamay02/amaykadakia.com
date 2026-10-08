@@ -37,7 +37,7 @@
 }
 
 // ============ Editor window ============
-$editor-bg: #1b2027;   // a shade darker than the page, like an editor pane
+$editor-bg: #020617;   // a shade darker than the page, like an editor pane
 $chrome-bg: var(--secondary-color);
 $line-soft: color-mix(in srgb, var(--accent-color) 35%, transparent);
 
@@ -76,9 +76,9 @@ $line-soft: color-mix(in srgb, var(--accent-color) 35%, transparent);
       border-radius: 50%;
     }
 
-    span:nth-child(1) { background: #E8A598; }
-    span:nth-child(2) { background: #E5C890; }
-    span:nth-child(3) { background: #B5C99A; }
+    span:nth-child(1) { background: #F43F5E; }
+    span:nth-child(2) { background: #FBBF24; }
+    span:nth-child(3) { background: #10B981; }
   }
 
   &__title {
