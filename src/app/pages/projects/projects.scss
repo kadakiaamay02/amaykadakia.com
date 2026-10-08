@@ -1,8 +1,8 @@
 // Uses the global palette from styles.scss:
-// --primary-color:   #0F172A  page background
-// --secondary-color: #1E293B  card surface
-// --accent-color:    #38BDF8  borders, shadows
-// --neutral-color:   #E2E8F0  text
+// --primary-color:   #222831  page background
+// --secondary-color: #393E46  card surface
+// --accent-color:    #948979  borders, shadows
+// --neutral-color:   #DFD0B8  text
 
 $border-soft: color-mix(in srgb, var(--accent-color) 40%, transparent);
 $text-dim: color-mix(in srgb, var(--neutral-color) 75%, transparent);
