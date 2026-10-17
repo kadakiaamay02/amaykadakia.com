@@ -13,7 +13,7 @@ export const PORTFOLIO_PROJECTS: Project[] = [
     category: "IoT & Embedded",
     description:
       "A Raspberry Pi–driven 128×64 LED display backed by a custom Flask API. It turns live aircraft, weather alerts, smart-home sensor events, notes and sports scores into an always-on ambient dashboard.",
-    image: "",
+    image: "/app/images/portfolio/led-matrix-dashboard.gif",
     tags: [
       "Python",
       "Flask",
