@@ -69,7 +69,7 @@
       outline-offset: 2px;
     }
 
-    &[aria-invalid='true'] { border-color: #F43F5E; }
+    &[aria-invalid='true'] { border-color: #E8A598; }
   }
 
   &__submit { flex-shrink: 0; }
@@ -89,8 +89,8 @@
 
   .code-form__number { color: color-mix(in srgb, var(--accent-color) 70%, transparent); }
 
-  &__text--error { color: #F43F5E; }
-  &__text--ok { color: #10B981; }
+  &__text--error { color: #E8A598; }
+  &__text--ok { color: #B5C99A; }
 }
 
 // ============ Pinned flights ============
@@ -356,13 +356,13 @@ $text-dim: color-mix(in srgb, var(--neutral-color) 70%, transparent);
   }
 
   &[data-status='airborne'] .status__dot {
-    background: #10B981;
+    background: #B5C99A;
     box-shadow: 0 0 0 0 rgba(181, 201, 154, 0.6);
     animation: pulse 2s ease-out infinite; // live indicator
   }
   &[data-status='on_ground'] .status__dot,
   &[data-status='arrived'] .status__dot { background: var(--neutral-color); }
-  &[data-status='not_found'] .status__dot { background: #F43F5E; }
+  &[data-status='not_found'] .status__dot { background: #E8A598; }
 }
 
 @keyframes pulse {

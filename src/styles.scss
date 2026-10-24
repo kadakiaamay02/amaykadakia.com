@@ -11,16 +11,16 @@
 
 /* ------------------------------------------------------------------- 
  * ## colors
- #0F172A
-#1E293B
-#38BDF8
-#E2E8F0
+ #222831
+#393E46
+#948979
+#DFD0B8
  * ------------------------------------------------------------------- */
 :root {
-    --primary-color: #0F172A;
-    --secondary-color: #1E293B;
-    --accent-color: #38BDF8;
-    --neutral-color: #E2E8F0;
+    --primary-color: #222831;
+    --secondary-color: #393E46;
+    --accent-color: #948979;
+    --neutral-color: #DFD0B8;
 }
 
 .footer{
@@ -78,7 +78,7 @@ body{
     color: var(--primary-color);
 
     &:hover:not(:disabled) {
-      background-color: #38BDF8;
+      background-color: #ebe0cc;
     }
   }
 
