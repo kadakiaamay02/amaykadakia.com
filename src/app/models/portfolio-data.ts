@@ -159,7 +159,7 @@ export const EDUCATION_DATA: EducationModel[] = [
     school: "Georgia Institute of Technology",
     degree: "Master of Science in Computer Science",
     period: "January 2024 - Present",
-    description: ["Specialization: Computing Systems"],
+    description: ["Specialization: Artificial Intelligence"],
   },
   {
     school: "University of Texas at Arlington",
