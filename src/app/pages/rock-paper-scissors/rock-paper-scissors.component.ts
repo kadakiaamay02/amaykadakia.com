@@ -14,7 +14,7 @@ export class RockPaperScissorsComponent implements OnInit {
 
   Move = {
     ROCK: '🪨',
-    PAPER: '📝',
+    PAPER: '📃',
     SCISSOR:'✂️'
 
   };
