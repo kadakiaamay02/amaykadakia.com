@@ -30,6 +30,24 @@ The panel rotates through live aircraft overhead (airline, route, aircraft type 
 
 Under the hood, a scene manager drives a non-blocking animation loop with priority interrupts instead of blocking sleeps. Background polling uses caching, adaptive intervals and rate-limit awareness so the display keeps working when an upstream service fails, and restart-safe caching avoids wasting limited API quotas. It runs as a systemd service, with a single-instance lock to protect the hardware, and the server and display live on separate devices.`,
   },
+{
+  "id": "unifi-nfc-manager",
+  "title": "NFC Smart Home Entry System",
+  "category": "IoT & Home Automation",
+  "description": "A custom hardware and software solution using a Raspberry Pi and PN532 NFC reader to securely arm and disarm a UniFi Dream Machine Pro alarm system, complete with a responsive Flask dashboard for real-time tag management.",
+  "image": "/assets/projects/nfc-manager.jpg",
+  "tags": [
+    "Raspberry Pi",
+    "Python",
+    "Flask",
+    "Tailwind CSS",
+    "UniFi API",
+    "IoT",
+    "Systemd"
+  ],
+  "details": "Engineered a physical access control system to interface directly with the UniFi Protect Alarm Manager. The backend runs as a continuous systemd daemon, polling entry sensor states (isBlockedByArmMode) to reliably determine the live system status. A lightweight Flask web application provides a mobile-responsive, Tailwind-styled UI for scanning, assigning, and revoking NFC tags on the fly without service interruptions, while also supporting custom HTTP webhook triggers for extensible home automation.",
+  "githubLink": ""
+},
   {
     id: "crud-webapp",
     title: "CRUD Web-app",
