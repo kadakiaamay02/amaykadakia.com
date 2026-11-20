@@ -1,0 +1,184 @@
+<div class="page">
+
+  <header class="page-header">
+    <div class="page-header__title">
+      <h1>Family &amp; Contacts</h1>
+      <nav class="page-links" aria-label="Wedding pages">
+        <a routerLink="/samay/engagement-checklist">Engagement checklist</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/samay/wedding-checklist">Wedding checklist</a>
+      </nav>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn--primary add-toggle"
+      (click)="formOpen = !formOpen"
+      [attr.aria-expanded]="formOpen"
+      aria-controls="person-form">
+      {{ formOpen ? 'Close' : 'Add a person' }}
+    </button>
+  </header>
+
+  @if (!loading && !notifiedCount) {
+    <p class="notice">
+      Nobody will get "it's done" emails yet. Add the bride and groom with their emails, or tick
+      <em>Gets "done" emails</em> for anyone who should hear when items are finished.
+    </p>
+  }
+
+  @if (error) {
+    <div class="error" role="alert">
+      {{ error }}
+      <button type="button" class="icon-btn" (click)="error = ''" aria-label="Dismiss">✕</button>
+    </div>
+  }
+  @if (success) {
+    <div class="success" role="status">{{ success }}</div>
+  }
+
+  <div class="layout">
+
+    <section id="person-form" class="side-form" [class.is-open]="formOpen" aria-label="Add or edit a person">
+      <app-code-window fileName="family.ts" [lines]="formLines" [keepCaret]="false" [compact]="true">
+        <form class="editor-form" (ngSubmit)="save()">
+
+          @if (editingId) {
+            <div class="editing-banner">Editing {{ form.name || 'a person' }} <button type="button" class="btn btn--ghost btn--sm" (click)="cancelEdit()">Cancel</button></div>
+          }
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="personName" class="editor-row__code"><span class="tok-keyword">let</span> name <span class="tok-punct">=</span></label>
+              <input id="personName" name="name" class="editor-field" [(ngModel)]="form.name" placeholder="'Full name'" required />
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="personEmail" class="editor-row__code"><span class="tok-keyword">let</span> email <span class="tok-punct">=</span></label>
+              <input id="personEmail" name="email" type="email" class="editor-field" [(ngModel)]="form.email" placeholder="'name@example.com'" />
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="personRole" class="editor-row__code"><span class="tok-keyword">let</span> role <span class="tok-punct">=</span></label>
+              <select id="personRole" name="role" class="editor-field" [(ngModel)]="form.role" (ngModelChange)="onRoleChange()">
+                @for (r of roles; track r.value) {
+                  <option [value]="r.value">{{ r.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="personSide" class="editor-row__code"><span class="tok-keyword">let</span> side <span class="tok-punct">=</span></label>
+              <select id="personSide" name="side" class="editor-field" [(ngModel)]="form.side">
+                @for (s of sides; track s.value) {
+                  <option [value]="s.value">{{ s.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="personRelation" class="editor-row__code"><span class="tok-keyword">let</span> relation <span class="tok-punct">=</span></label>
+              <input id="personRelation" name="relation" class="editor-field" [(ngModel)]="form.relation" placeholder="'Bride's mother'" />
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="personPhone" class="editor-row__code"><span class="tok-keyword">let</span> phone <span class="tok-punct">=</span></label>
+              <input id="personPhone" name="phone" type="tel" class="editor-field" [(ngModel)]="form.phone" placeholder="'Optional'" />
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label class="toggle">
+                <input type="checkbox" name="notify" [(ngModel)]="form.notify_on_complete" (ngModelChange)="notifyTouched = true" />
+                Gets "done" emails
+              </label>
+              <span class="hint">Emailed whenever a checklist item is finished. On for the bride and groom by default.</span>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="personNotes" class="editor-row__code"><span class="tok-keyword">let</span> notes <span class="tok-punct">=</span></label>
+              <textarea id="personNotes" name="notes" class="editor-field" [(ngModel)]="form.notes" placeholder="'Address, dietary needs, anything...'"></textarea>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <button type="submit" class="btn btn--primary" [disabled]="saving">
+                {{ saving ? 'Saving…' : (editingId ? 'Save changes' : 'Add person') }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </app-code-window>
+    </section>
+
+    <section class="people" aria-label="Family and contacts">
+      @if (loading) {
+        <p class="empty-state">Loading…</p>
+      } @else {
+        @for (group of groups; track group.label) {
+          <h2 class="group-title">{{ group.label }}</h2>
+          <div class="people-grid">
+            @for (p of group.people; track p.id) {
+              <article class="card person-card" [class.person-card--couple]="p.role === 'bride' || p.role === 'groom'">
+                <div class="person-card__head">
+                  <div>
+                    <p class="person-card__name">{{ p.name }}</p>
+                    <p class="muted person-card__role">{{ p.relation || roleLabel(p.role) }}</p>
+                  </div>
+                  <div class="person-card__actions">
+                    <button type="button" class="icon-btn" (click)="edit(p)" [attr.aria-label]="'Edit ' + p.name" title="Edit">✏️</button>
+                    <button type="button" class="icon-btn" (click)="remove(p)" [attr.aria-label]="'Remove ' + p.name" title="Remove">🗑️</button>
+                  </div>
+                </div>
+
+                @if (p.email) {
+                  <p class="person-card__line">✉ <a [href]="'mailto:' + p.email">{{ p.email }}</a></p>
+                } @else {
+                  <p class="person-card__line muted">✉ No email, so no reminders</p>
+                }
+                @if (p.phone) {
+                  <p class="person-card__line">☎ <a [href]="'tel:' + p.phone">{{ p.phone }}</a></p>
+                }
+                @if (p.notes) {
+                  <p class="person-card__notes">{{ p.notes }}</p>
+                }
+
+                <label class="toggle person-card__notify">
+                  <input type="checkbox" [checked]="p.notify_on_complete" (change)="toggleNotify(p)" [disabled]="!p.email" />
+                  Gets "done" emails
+                </label>
+              </article>
+            }
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <p>No one here yet. Start with the bride and groom, then add the family members who'll help.</p>
+          </div>
+        }
+      }
+    </section>
+  </div>
+</div>

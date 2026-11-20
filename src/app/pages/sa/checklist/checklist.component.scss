@@ -1,0 +1,147 @@
+@use '../wedding-shared' as *;
+
+// ============ Progress ============
+.progress {
+  margin-bottom: 1.5rem;
+
+  &__numbers {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
+  }
+
+  &__overdue { color: #F43F5E; }
+
+  &__bar {
+    height: 8px;
+    background: var(--secondary-color);
+    border-radius: 999px;
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      background: var(--accent-color);
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+  }
+}
+
+// ============ Reminder panel ============
+.reminder-panel {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.1rem;
+  background: var(--secondary-color);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 50%, transparent);
+  border-radius: 10px;
+
+  p { margin: 0 0 0.75rem; font-size: 0.92rem; line-height: 1.5; }
+
+  label { display: block; margin-bottom: 0.35rem; font-size: 0.85rem; }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+}
+
+// ============ Items ============
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.85rem;
+  align-items: start;
+  background-color: var(--secondary-color);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 40%, transparent);
+  border-left: 4px solid var(--accent-color);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+
+  &.is-overdue { border-left-color: #F43F5E; }
+
+  &.is-done {
+    border-left-color: #10B981;
+    opacity: 0.75;
+
+    .item-title { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--neutral-color) 50%, transparent); }
+  }
+}
+
+.item-check {
+  padding-top: 0.15rem;
+  cursor: pointer;
+
+  input {
+    width: 1.3rem;
+    height: 1.3rem;
+    accent-color: #10B981;
+    cursor: pointer;
+  }
+}
+
+.item-body {
+  min-width: 0;
+
+  p { margin: 0; }
+}
+
+.item-title {
+  font-size: 1.1rem;
+  line-height: 1.4;
+  color: var(--neutral-color);
+  overflow-wrap: anywhere;
+}
+
+.item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+
+  &:empty { display: none; }
+}
+
+.due--late { color: #F43F5E; font-weight: 600; }
+
+.item-details {
+  margin-top: 0.5rem !important;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  color: color-mix(in srgb, var(--neutral-color) 85%, transparent);
+}
+
+.item-assignee,
+.item-status {
+  margin-top: 0.4rem !important;
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.1rem;
+}
+
+@media (max-width: 600px) {
+  .item-card { grid-template-columns: auto 1fr; }
+
+  .item-actions {
+    grid-column: 2;
+    justify-content: flex-end;
+    margin-top: -0.25rem;
+  }
+}

@@ -1,0 +1,271 @@
+<div class="page">
+
+  <header class="page-header">
+    <div class="page-header__title">
+      <h1>{{ label }} Checklist</h1>
+      <nav class="page-links" aria-label="Wedding pages">
+        <a [routerLink]="'/samay/' + otherChecklist.key + '-checklist'">{{ otherChecklist.label }} checklist</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/samay/wedding-people">Family &amp; contacts</a>
+      </nav>
+    </div>
+
+    <!-- Only visible on phones; desktop always shows the form -->
+    <button
+      type="button"
+      class="btn btn--primary add-toggle"
+      (click)="formOpen = !formOpen"
+      [attr.aria-expanded]="formOpen"
+      aria-controls="item-form">
+      {{ formOpen ? 'Close' : 'Add an item' }}
+    </button>
+  </header>
+
+  @if (summary.total) {
+    <section class="progress" aria-label="Progress">
+      <div class="progress__numbers">
+        <span><strong>{{ summary.done }}</strong> of {{ summary.total }} done</span>
+        @if (summary.overdue) {
+          <span class="progress__overdue">{{ summary.overdue }} overdue</span>
+        }
+      </div>
+      <div class="progress__bar" role="progressbar" [attr.aria-valuenow]="percentDone" aria-valuemin="0" aria-valuemax="100">
+        <span [style.width.%]="percentDone"></span>
+      </div>
+    </section>
+  }
+
+  @if (error) {
+    <div class="error" role="alert">
+      {{ error }}
+      <button type="button" class="icon-btn" (click)="error = ''" aria-label="Dismiss">✕</button>
+    </div>
+  }
+  @if (success) {
+    <div class="success" role="status">{{ success }}</div>
+  }
+
+  <div class="layout">
+
+    <!-- Add / edit form, inside the editor window -->
+    <section id="item-form" class="side-form" [class.is-open]="formOpen" aria-label="Add or edit an item">
+      <app-code-window fileName="{{ checklist }}-item.ts" [lines]="formLines" [keepCaret]="false" [compact]="true">
+        <form class="editor-form" (ngSubmit)="save()">
+
+          @if (editingId) {
+            <div class="editing-banner">Editing an item <button type="button" class="btn btn--ghost btn--sm" (click)="cancelEdit()">Cancel</button></div>
+          }
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="itemTitle" class="editor-row__code"><span class="tok-keyword">let</span> task <span class="tok-punct">=</span></label>
+              <input id="itemTitle" name="title" class="editor-field" [(ngModel)]="form.title" placeholder="'Book the photographer'" required />
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="itemAssignee" class="editor-row__code"><span class="tok-keyword">let</span> assignedTo <span class="tok-punct">=</span></label>
+              <select id="itemAssignee" name="assignee" class="editor-field" [(ngModel)]="form.assignee" (ngModelChange)="onAssigneeChange()">
+                <option value="">Nobody yet</option>
+                @for (p of people; track p.id) {
+                  <option [value]="'p:' + p.id">{{ p.name }}{{ p.relation ? ' (' + p.relation + ')' : '' }}</option>
+                }
+                <option value="other">Someone else…</option>
+              </select>
+              @if (!people.length) {
+                <span class="hint">Add family on the <a routerLink="/samay/wedding-people">contacts page</a> to pick them here.</span>
+              }
+            </div>
+          </div>
+
+          @if (form.assignee === 'other') {
+            <div class="editor-row">
+              <span class="editor-row__number" aria-hidden="true"></span>
+              <div class="editor-row__content">
+                <label for="itemAssignedName" class="editor-row__code"><span class="tok-keyword">let</span> name <span class="tok-punct">=</span></label>
+                <input id="itemAssignedName" name="assigned_to" class="editor-field" [(ngModel)]="form.assigned_to" placeholder="'Name'" />
+              </div>
+            </div>
+          }
+
+          @if (form.assignee) {
+            <div class="editor-row">
+              <span class="editor-row__number" aria-hidden="true"></span>
+              <div class="editor-row__content">
+                <label for="itemAssignedEmail" class="editor-row__code"><span class="tok-keyword">let</span> email <span class="tok-punct">=</span></label>
+                <input id="itemAssignedEmail" name="assigned_email" type="email" class="editor-field" [(ngModel)]="form.assigned_email" placeholder="'name@example.com'" />
+                @if (!form.assigned_email) {
+                  <span class="hint">Without an email they can't get reminders.</span>
+                }
+              </div>
+            </div>
+          }
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="itemDue" class="editor-row__code"><span class="tok-keyword">let</span> due <span class="tok-punct">=</span></label>
+              <input id="itemDue" name="due_date" type="date" class="editor-field" [(ngModel)]="form.due_date" />
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="itemCategory" class="editor-row__code"><span class="tok-keyword">let</span> category <span class="tok-punct">=</span></label>
+              <input id="itemCategory" name="category" class="editor-field" [(ngModel)]="form.category" placeholder="'Vendors'" list="categoryOptions" />
+              <datalist id="categoryOptions">
+                @for (c of ['Planning', 'Venue', 'Guests', 'Vendors', 'Food', 'Decor', 'Attire', 'Ceremony', 'Gifts', 'Logistics', 'Legal']; track c) {
+                  <option [value]="c"></option>
+                }
+              </datalist>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="itemDetails" class="editor-row__code"><span class="tok-keyword">let</span> details <span class="tok-punct">=</span></label>
+              <textarea id="itemDetails" name="details" class="editor-field" [(ngModel)]="form.details" placeholder="'Phone numbers, links, notes...'"></textarea>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <button type="submit" class="btn btn--primary" [disabled]="saving">
+                {{ saving ? 'Saving…' : (editingId ? 'Save changes' : 'Add item') }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </app-code-window>
+    </section>
+
+    <!-- List -->
+    <section class="list-area" [attr.aria-label]="label + ' checklist items'">
+
+      <div class="toolbar">
+        <div class="chips" role="group" aria-label="Show">
+          @for (f of [['open', 'Open'], ['overdue', 'Overdue'], ['done', 'Done'], ['all', 'All']]; track f[0]) {
+            <button type="button" class="chip" [class.is-active]="filter === f[0]" [attr.aria-pressed]="filter === f[0]"
+                    (click)="filter = $any(f[0])">{{ f[1] }}</button>
+          }
+        </div>
+
+        @if (assignees.length) {
+          <label class="toolbar__select">
+            <span class="visually-hidden">Assigned to</span>
+            <select [(ngModel)]="personFilter" name="personFilter">
+              <option value="">Everyone</option>
+              @for (a of assignees; track a.email) {
+                <option [value]="a.email">{{ a.name }}</option>
+              }
+            </select>
+          </label>
+        }
+
+        <label class="toggle" title="When you tick something off, email the bride and groom">
+          <input type="checkbox" [(ngModel)]="notifyOnDone" name="notifyOnDone" />
+          Email bride &amp; groom when done
+        </label>
+
+        <button type="button" class="btn btn--outline btn--sm" (click)="reminderOpen = !reminderOpen"
+                [attr.aria-expanded]="reminderOpen" aria-controls="reminder-panel" [disabled]="!openWithEmailCount">
+          ✉ Send reminders
+        </button>
+      </div>
+
+      @if (reminderOpen) {
+        <div id="reminder-panel" class="reminder-panel">
+          <p>Each person gets <strong>one email</strong> listing their open items, with a <em>Mark as done</em> button for each.
+             When they tap it, the bride and groom are emailed automatically.</p>
+          <label for="reminderMessage">Personal note (optional)</label>
+          <textarea id="reminderMessage" class="editor-field" [(ngModel)]="reminderMessage" name="reminderMessage"
+                    placeholder="'Thank you so much for helping with this!'"></textarea>
+          <div class="reminder-panel__actions">
+            <button type="button" class="btn btn--primary btn--sm" [disabled]="sending" (click)="sendBulkReminders('overdue')">Overdue only</button>
+            <button type="button" class="btn btn--outline btn--sm" [disabled]="sending" (click)="sendBulkReminders('due_soon')">Due in the next 7 days</button>
+            <button type="button" class="btn btn--outline btn--sm" [disabled]="sending" (click)="sendBulkReminders('open')">Everything open</button>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="reminderOpen = false">Cancel</button>
+          </div>
+        </div>
+      }
+
+      @if (loading) {
+        <p class="empty-state">Loading…</p>
+      } @else if (!items.length) {
+        <div class="empty-state">
+          <p>Nothing on the {{ label.toLowerCase() }} checklist yet.</p>
+          <button type="button" class="btn btn--outline" (click)="seedStarter()" [disabled]="saving">Start with suggested items</button>
+        </div>
+      } @else {
+        <div class="items">
+          @for (item of visibleItems; track item.id) {
+            <article class="item-card" [class.is-done]="item.done" [class.is-overdue]="item.overdue">
+              <label class="item-check">
+                <input type="checkbox" [checked]="item.done" (change)="toggleDone(item)" [disabled]="busyIds.has(item.id)" />
+                <span class="visually-hidden">{{ item.done ? 'Mark as not done' : 'Mark as done' }}: {{ item.title }}</span>
+              </label>
+
+              <div class="item-body">
+                <p class="item-title">{{ item.title }}</p>
+
+                <div class="item-meta">
+                  @if (item.category) {
+                    <span class="tag">{{ item.category }}</span>
+                  }
+                  @if (item.due_date) {
+                    <span class="due" [class.due--late]="item.overdue">📅 {{ dueLabel(item) }}</span>
+                  }
+                </div>
+
+                @if (item.details) {
+                  <p class="item-details">{{ item.details }}</p>
+                }
+
+                <p class="item-assignee">
+                  @if (item.assigned_to || item.assigned_email) {
+                    👤 {{ item.assigned_to || 'Someone' }}
+                    @if (item.assigned_email) {
+                      <span class="muted">· {{ item.assigned_email }}</span>
+                    } @else {
+                      <span class="muted">· no email</span>
+                    }
+                  } @else {
+                    <span class="muted">Not assigned</span>
+                  }
+                </p>
+
+                @if (item.done) {
+                  <p class="item-status">✅ Done{{ item.done_by ? ' by ' + item.done_by : '' }}{{ item.done_at ? ' · ' + item.done_at.slice(0, 10) : '' }}</p>
+                } @else if (item.last_reminder_iso) {
+                  <p class="item-status muted">✉ Reminded {{ item.last_reminder_iso.slice(0, 16) }}</p>
+                }
+              </div>
+
+              <div class="item-actions">
+                @if (!item.done && item.assigned_email) {
+                  <button type="button" class="icon-btn" (click)="remind(item)" [disabled]="busyIds.has(item.id)"
+                          [attr.aria-label]="'Email a reminder to ' + (item.assigned_to || item.assigned_email)"
+                          [title]="'Email a reminder to ' + (item.assigned_to || item.assigned_email)">✉️</button>
+                }
+                @if (item.done) {
+                  <button type="button" class="icon-btn" (click)="tellCouple(item)" [disabled]="busyIds.has(item.id)"
+                          aria-label="Email the bride and groom that this is done" title="Email the bride and groom that this is done">📣</button>
+                }
+                <button type="button" class="icon-btn" (click)="edit(item)" aria-label="Edit item" title="Edit">✏️</button>
+                <button type="button" class="icon-btn" (click)="remove(item)" aria-label="Delete item" title="Delete">🗑️</button>
+              </div>
+            </article>
+          } @empty {
+            <p class="empty-state">Nothing here with these filters.</p>
+          }
+        </div>
+      }
+    </section>
+  </div>
+</div>

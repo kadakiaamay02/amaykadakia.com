@@ -29,6 +29,13 @@ export const routes: Routes = [
   { path: 'samay/wines', component: WineListComponent, canActivate: [samayGuard] },
   { path: 'samay/restaurants', component: RestaurantListComponent, canActivate: [samayGuard] },
   { path: 'notes', component: NotesComponent, canActivate: [samayGuard] },
+  // Wedding pages load only when opened, so they don't add to the size of the public site
+  { path: 'samay/engagement-checklist', canActivate: [samayGuard], data: { checklist: 'engagement' },
+    loadComponent: () => import('./pages/sa/checklist/checklist.component').then(m => m.ChecklistComponent) },
+  { path: 'samay/wedding-checklist', canActivate: [samayGuard], data: { checklist: 'wedding' },
+    loadComponent: () => import('./pages/sa/checklist/checklist.component').then(m => m.ChecklistComponent) },
+  { path: 'samay/wedding-people', canActivate: [samayGuard],
+    loadComponent: () => import('./pages/sa/wedding-people/wedding-people.component').then(m => m.WeddingPeopleComponent) },
   { path: 'admin/dashboard', component: Dashboard },
   { path: 'flight-tracker', component: FlightTracker },
   { path: '**', redirectTo: '/about', pathMatch: 'full' },
