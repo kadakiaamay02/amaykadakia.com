@@ -5,7 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Observable, Subscription, forkJoin } from 'rxjs';
 import { CodeWindow } from '@app/code-window/code-window';
 import {
-  ChecklistItem, ChecklistItemInput, ChecklistKey, Person, SendEmailRequest, WeddingService
+  ChecklistItem, ChecklistItemInput, ChecklistKey, EmailOutcome, Person, SendEmailRequest, WeddingService
 } from '@app/services/s/wedding.service';
 import { STARTER_ITEMS } from './starter-items';
 
@@ -62,6 +62,7 @@ export class ChecklistComponent implements OnInit, OnDestroy {
   editingId: number | null = null;
   form: ItemForm = emptyForm();
   notifyOnDone = true;         // email the bride and groom when something is ticked off
+  emailOnAssign = true;        // email someone when an item is assigned to them
 
   reminderOpen = false;
   reminderMessage = '';
@@ -175,16 +176,25 @@ export class ChecklistComponent implements OnInit, OnDestroy {
       assigned_person_id: personId,
       assigned_to: this.form.assignee ? (this.form.assigned_to.trim() || null) : null,
       assigned_email: this.form.assignee ? (this.form.assigned_email.trim() || null) : null,
+      notify_assignee: this.emailOnAssign,
     };
 
     this.saving = true;
-    const request: Observable<unknown> = this.editingId
+    const request: Observable<{ assignment_email: EmailOutcome | null }> = this.editingId
       ? this.api.updateItem(this.editingId, payload)
       : this.api.addItem(this.checklist, payload);
     request.subscribe({
-      next: () => {
+      next: res => {
         this.saving = false;
-        this.showSuccess(this.editingId ? 'Item updated.' : 'Item added.');
+        const saved = this.editingId ? 'Item updated.' : 'Item added.';
+        const sent = res.assignment_email;
+        if (sent && !sent.ok) {
+          this.showError(`${saved} But the email to ${sent.to} didn't go out: ${sent.error}`);
+        } else if (sent?.ok) {
+          this.showSuccess(`${saved} Emailed ${payload.assigned_to || sent.to} about it.`);
+        } else {
+          this.showSuccess(saved);
+        }
         this.cancelEdit();
         this.formOpen = false;
         this.reload();

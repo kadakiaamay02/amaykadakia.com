@@ -99,6 +99,14 @@
                 <input id="itemAssignedEmail" name="assigned_email" type="email" class="editor-field" [(ngModel)]="form.assigned_email" placeholder="'name@example.com'" />
                 @if (!form.assigned_email) {
                   <span class="hint">Without an email they can't get reminders.</span>
+                } @else {
+                  <label class="toggle">
+                    <input type="checkbox" name="emailOnAssign" [(ngModel)]="emailOnAssign" />
+                    Email them about it
+                  </label>
+                  <span class="hint">
+                    {{ editingId ? 'Only sent if this is someone new for this item.' : 'They get the details and a Mark as done button.' }}
+                  </span>
                 }
               </div>
             </div>
@@ -243,7 +251,7 @@
                 @if (item.done) {
                   <p class="item-status">✅ Done{{ item.done_by ? ' by ' + item.done_by : '' }}{{ item.done_at ? ' · ' + item.done_at.slice(0, 10) : '' }}</p>
                 } @else if (item.last_reminder_iso) {
-                  <p class="item-status muted">✉ Reminded {{ item.last_reminder_iso.slice(0, 16) }}</p>
+                  <p class="item-status muted">✉ Last emailed {{ item.last_reminder_iso.slice(0, 16) }}</p>
                 }
               </div>
 

@@ -46,6 +46,8 @@ export interface ChecklistItemInput {
   assigned_to?: string | null;
   assigned_email?: string | null;
   assigned_person_id?: number | null;
+  /** Email the assignee when this item is created with, or changed to, a new assignee */
+  notify_assignee?: boolean;
 }
 
 export interface ChecklistResponse {
@@ -62,6 +64,14 @@ export interface EmailOutcome {
   error: string | null;
 }
 
+export interface ItemUpdateResult {
+  item: ChecklistItem;
+  /** The "it's done" email to the bride and groom, if one was sent */
+  emailed: EmailOutcome | null;
+  /** The "you've been asked to help" email to a new assignee, if one was sent */
+  assignment_email: EmailOutcome | null;
+}
+
 export interface SendEmailResult {
   sent: EmailOutcome[];
   skipped: { id: number; title: string; reason: string }[];
@@ -69,7 +79,7 @@ export interface SendEmailResult {
 }
 
 export interface SendEmailRequest {
-  type: 'reminder' | 'completed';
+  type: 'reminder' | 'completed' | 'assigned';
   item_ids?: number[];
   checklist?: ChecklistKey;
   scope?: 'open' | 'overdue' | 'due_soon' | 'done_today';
@@ -105,8 +115,8 @@ export class WeddingService {
     return this.http.get<ChecklistResponse>(`${this.api}/checklists/${checklist}`);
   }
 
-  addItem(checklist: ChecklistKey, item: ChecklistItemInput): Observable<ChecklistItem> {
-    return this.http.post<ChecklistItem>(`${this.api}/checklists/${checklist}`, item);
+  addItem(checklist: ChecklistKey, item: ChecklistItemInput): Observable<ChecklistItem & { assignment_email: EmailOutcome | null }> {
+    return this.http.post<ChecklistItem & { assignment_email: EmailOutcome | null }>(`${this.api}/checklists/${checklist}`, item);
   }
 
   addItems(checklist: ChecklistKey, items: ChecklistItemInput[]): Observable<{ items: ChecklistItem[] }> {
@@ -114,8 +124,8 @@ export class WeddingService {
   }
 
   updateItem(id: number, changes: Partial<ChecklistItemInput> & { done?: boolean; notify?: boolean; done_by?: string }):
-      Observable<{ item: ChecklistItem; emailed: EmailOutcome | null }> {
-    return this.http.put<{ item: ChecklistItem; emailed: EmailOutcome | null }>(`${this.api}/checklists/items/${id}`, changes);
+      Observable<ItemUpdateResult> {
+    return this.http.put<ItemUpdateResult>(`${this.api}/checklists/items/${id}`, changes);
   }
 
   deleteItem(id: number): Observable<unknown> {

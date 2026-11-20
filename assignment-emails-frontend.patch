@@ -1,0 +1,156 @@
+From 6ce336b1f451534e6db8905f3e410d27e3783e1e Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 20 Nov 2026 10:02:25 -0600
+Subject: [PATCH] Email people when checklist items are assigned to them
+
+- 'Email them about it' switch on the item form (on by default)
+- Only sent for new items or when an item moves to someone new
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015z3AwgmF2Bp9hxEBubmPHh
+---
+ .../sa/checklist/checklist.component.html     | 10 +++++++++-
+ .../pages/sa/checklist/checklist.component.ts | 18 +++++++++++++----
+ src/app/services/s/wedding.service.ts         | 20 ++++++++++++++-----
+ 3 files changed, 38 insertions(+), 10 deletions(-)
+
+diff --git a/src/app/pages/sa/checklist/checklist.component.html b/src/app/pages/sa/checklist/checklist.component.html
+index dd8d41b..398a276 100644
+--- a/src/app/pages/sa/checklist/checklist.component.html
++++ b/src/app/pages/sa/checklist/checklist.component.html
+@@ -99,6 +99,14 @@
+                 <input id="itemAssignedEmail" name="assigned_email" type="email" class="editor-field" [(ngModel)]="form.assigned_email" placeholder="'name@example.com'" />
+                 @if (!form.assigned_email) {
+                   <span class="hint">Without an email they can't get reminders.</span>
++                } @else {
++                  <label class="toggle">
++                    <input type="checkbox" name="emailOnAssign" [(ngModel)]="emailOnAssign" />
++                    Email them about it
++                  </label>
++                  <span class="hint">
++                    {{ editingId ? 'Only sent if this is someone new for this item.' : 'They get the details and a Mark as done button.' }}
++                  </span>
+                 }
+               </div>
+             </div>
+@@ -243,7 +251,7 @@
+                 @if (item.done) {
+                   <p class="item-status">✅ Done{{ item.done_by ? ' by ' + item.done_by : '' }}{{ item.done_at ? ' · ' + item.done_at.slice(0, 10) : '' }}</p>
+                 } @else if (item.last_reminder_iso) {
+-                  <p class="item-status muted">✉ Reminded {{ item.last_reminder_iso.slice(0, 16) }}</p>
++                  <p class="item-status muted">✉ Last emailed {{ item.last_reminder_iso.slice(0, 16) }}</p>
+                 }
+               </div>
+ 
+diff --git a/src/app/pages/sa/checklist/checklist.component.ts b/src/app/pages/sa/checklist/checklist.component.ts
+index 56e6761..7f65fac 100644
+--- a/src/app/pages/sa/checklist/checklist.component.ts
++++ b/src/app/pages/sa/checklist/checklist.component.ts
+@@ -5,7 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
+ import { Observable, Subscription, forkJoin } from 'rxjs';
+ import { CodeWindow } from '@app/code-window/code-window';
+ import {
+-  ChecklistItem, ChecklistItemInput, ChecklistKey, Person, SendEmailRequest, WeddingService
++  ChecklistItem, ChecklistItemInput, ChecklistKey, EmailOutcome, Person, SendEmailRequest, WeddingService
+ } from '@app/services/s/wedding.service';
+ import { STARTER_ITEMS } from './starter-items';
+ 
+@@ -62,6 +62,7 @@ export class ChecklistComponent implements OnInit, OnDestroy {
+   editingId: number | null = null;
+   form: ItemForm = emptyForm();
+   notifyOnDone = true;         // email the bride and groom when something is ticked off
++  emailOnAssign = true;        // email someone when an item is assigned to them
+ 
+   reminderOpen = false;
+   reminderMessage = '';
+@@ -175,16 +176,25 @@ export class ChecklistComponent implements OnInit, OnDestroy {
+       assigned_person_id: personId,
+       assigned_to: this.form.assignee ? (this.form.assigned_to.trim() || null) : null,
+       assigned_email: this.form.assignee ? (this.form.assigned_email.trim() || null) : null,
++      notify_assignee: this.emailOnAssign,
+     };
+ 
+     this.saving = true;
+-    const request: Observable<unknown> = this.editingId
++    const request: Observable<{ assignment_email: EmailOutcome | null }> = this.editingId
+       ? this.api.updateItem(this.editingId, payload)
+       : this.api.addItem(this.checklist, payload);
+     request.subscribe({
+-      next: () => {
++      next: res => {
+         this.saving = false;
+-        this.showSuccess(this.editingId ? 'Item updated.' : 'Item added.');
++        const saved = this.editingId ? 'Item updated.' : 'Item added.';
++        const sent = res.assignment_email;
++        if (sent && !sent.ok) {
++          this.showError(`${saved} But the email to ${sent.to} didn't go out: ${sent.error}`);
++        } else if (sent?.ok) {
++          this.showSuccess(`${saved} Emailed ${payload.assigned_to || sent.to} about it.`);
++        } else {
++          this.showSuccess(saved);
++        }
+         this.cancelEdit();
+         this.formOpen = false;
+         this.reload();
+diff --git a/src/app/services/s/wedding.service.ts b/src/app/services/s/wedding.service.ts
+index 1167bf9..84811ad 100644
+--- a/src/app/services/s/wedding.service.ts
++++ b/src/app/services/s/wedding.service.ts
+@@ -46,6 +46,8 @@ export interface ChecklistItemInput {
+   assigned_to?: string | null;
+   assigned_email?: string | null;
+   assigned_person_id?: number | null;
++  /** Email the assignee when this item is created with, or changed to, a new assignee */
++  notify_assignee?: boolean;
+ }
+ 
+ export interface ChecklistResponse {
+@@ -62,6 +64,14 @@ export interface EmailOutcome {
+   error: string | null;
+ }
+ 
++export interface ItemUpdateResult {
++  item: ChecklistItem;
++  /** The "it's done" email to the bride and groom, if one was sent */
++  emailed: EmailOutcome | null;
++  /** The "you've been asked to help" email to a new assignee, if one was sent */
++  assignment_email: EmailOutcome | null;
++}
++
+ export interface SendEmailResult {
+   sent: EmailOutcome[];
+   skipped: { id: number; title: string; reason: string }[];
+@@ -69,7 +79,7 @@ export interface SendEmailResult {
+ }
+ 
+ export interface SendEmailRequest {
+-  type: 'reminder' | 'completed';
++  type: 'reminder' | 'completed' | 'assigned';
+   item_ids?: number[];
+   checklist?: ChecklistKey;
+   scope?: 'open' | 'overdue' | 'due_soon' | 'done_today';
+@@ -105,8 +115,8 @@ export class WeddingService {
+     return this.http.get<ChecklistResponse>(`${this.api}/checklists/${checklist}`);
+   }
+ 
+-  addItem(checklist: ChecklistKey, item: ChecklistItemInput): Observable<ChecklistItem> {
+-    return this.http.post<ChecklistItem>(`${this.api}/checklists/${checklist}`, item);
++  addItem(checklist: ChecklistKey, item: ChecklistItemInput): Observable<ChecklistItem & { assignment_email: EmailOutcome | null }> {
++    return this.http.post<ChecklistItem & { assignment_email: EmailOutcome | null }>(`${this.api}/checklists/${checklist}`, item);
+   }
+ 
+   addItems(checklist: ChecklistKey, items: ChecklistItemInput[]): Observable<{ items: ChecklistItem[] }> {
+@@ -114,8 +124,8 @@ export class WeddingService {
+   }
+ 
+   updateItem(id: number, changes: Partial<ChecklistItemInput> & { done?: boolean; notify?: boolean; done_by?: string }):
+-      Observable<{ item: ChecklistItem; emailed: EmailOutcome | null }> {
+-    return this.http.put<{ item: ChecklistItem; emailed: EmailOutcome | null }>(`${this.api}/checklists/items/${id}`, changes);
++      Observable<ItemUpdateResult> {
++    return this.http.put<ItemUpdateResult>(`${this.api}/checklists/items/${id}`, changes);
+   }
+ 
+   deleteItem(id: number): Observable<unknown> {
+-- 
+2.43.0
+
