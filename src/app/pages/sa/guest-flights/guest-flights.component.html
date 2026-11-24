@@ -47,7 +47,7 @@
         <form class="editor-form" (ngSubmit)="save()">
 
           @if (editingId) {
-            <div class="editing-banner">Editing {{ form.guest_name || 'a flight' }} <button type="button" class="btn btn--ghost btn--sm" (click)="cancelEdit()">Cancel</button></div>
+            <div class="editing-banner">Editing {{ form.guest_name || 'a flight' }}{{ editingReturnOnly ? "'s return flight" : '' }} <button type="button" class="btn btn--ghost btn--sm" (click)="cancelEdit()">Cancel</button></div>
           }
 
           <div class="editor-row">
@@ -62,12 +62,20 @@
             </div>
           </div>
 
+          @if (!editingReturnOnly) {
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <p class="editor-row__comment">// Flying in</p>
+            </div>
+          </div>
+
           <div class="editor-row">
             <span class="editor-row__number" aria-hidden="true"></span>
             <div class="editor-row__content">
               <label for="guestFlight" class="editor-row__code"><span class="tok-keyword">let</span> flight <span class="tok-punct">=</span></label>
               <input id="guestFlight" name="flight" class="editor-field" [(ngModel)]="form.flight" placeholder="'AA1234'"
-                     autocapitalize="characters" autocomplete="off" spellcheck="false" required />
+                     autocapitalize="characters" autocomplete="off" spellcheck="false" />
             </div>
           </div>
 
@@ -76,7 +84,7 @@
             <div class="editor-row__content">
               <label for="guestDate" class="editor-row__code"><span class="tok-keyword">let</span> lands <span class="tok-punct">=</span></label>
               <div class="pair">
-                <input id="guestDate" name="flight_date" type="date" class="editor-field" [(ngModel)]="form.flight_date" required />
+                <input id="guestDate" name="flight_date" type="date" class="editor-field" [(ngModel)]="form.flight_date" />
                 <label for="guestTime" class="visually-hidden">Landing time</label>
                 <input id="guestTime" name="arrive_time" type="time" class="editor-field" [(ngModel)]="form.arrive_time" />
               </div>
@@ -106,6 +114,75 @@
               <input id="guestPickup" name="pickup_by" class="editor-field" [(ngModel)]="form.pickup_by" list="guest-people" placeholder="'Who's picking them up'" autocomplete="off" />
             </div>
           </div>
+          }
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <p class="editor-row__comment">// Flying home{{ editingReturnOnly ? '' : ' (optional)' }}</p>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="retFlight" class="editor-row__code"><span class="tok-keyword">let</span> returnFlight <span class="tok-punct">=</span></label>
+              <input id="retFlight" name="ret_flight" class="editor-field" [(ngModel)]="form.ret_flight" placeholder="'AA2210'"
+                     autocapitalize="characters" autocomplete="off" spellcheck="false" />
+              @if (hadReturn && !form.ret_flight) {
+                <span class="hint">Saving with this empty removes their return flight.</span>
+              }
+            </div>
+          </div>
+
+          @if (form.ret_flight || editingReturnOnly) {
+            <div class="editor-row">
+              <span class="editor-row__number" aria-hidden="true"></span>
+              <div class="editor-row__content">
+                <label for="retDate" class="editor-row__code"><span class="tok-keyword">let</span> leaves <span class="tok-punct">=</span></label>
+                <div class="pair">
+                  <input id="retDate" name="ret_date" type="date" class="editor-field" [(ngModel)]="form.ret_date" [min]="form.flight_date" />
+                  <label for="retTime" class="visually-hidden">Take-off time</label>
+                  <input id="retTime" name="ret_time" type="time" class="editor-field" [(ngModel)]="form.ret_time" />
+                </div>
+                <span class="hint">Take-off time, your local time. With it, the flight goes on the board {{ data?.return_lead_hours ?? 1 }} hour{{ (data?.return_lead_hours ?? 1) === 1 ? '' : 's' }} before take-off and stays on until it lands.</span>
+              </div>
+            </div>
+
+            <div class="editor-row">
+              <span class="editor-row__number" aria-hidden="true"></span>
+              <div class="editor-row__content">
+                <label for="retFrom" class="editor-row__code"><span class="tok-keyword">let</span> returnRoute <span class="tok-punct">=</span></label>
+                <div class="pair">
+                  <input id="retFrom" name="ret_from" class="editor-field" [(ngModel)]="form.ret_from"
+                         [placeholder]="'\'From: ' + (form.to_airport || 'DFW').toUpperCase() + '\''"
+                         maxlength="4" autocapitalize="characters" autocomplete="off" />
+                  <label for="retTo" class="visually-hidden">Flying home to</label>
+                  <input id="retTo" name="ret_to" class="editor-field" [(ngModel)]="form.ret_to"
+                         [placeholder]="'\'To: ' + (form.from_airport || 'EWR').toUpperCase() + '\''"
+                         maxlength="4" autocapitalize="characters" autocomplete="off" />
+                </div>
+                @if (!editingReturnOnly) {
+                  <span class="hint">Left blank, it's the trip in reversed.</span>
+                }
+              </div>
+            </div>
+
+            <div class="editor-row">
+              <span class="editor-row__number" aria-hidden="true"></span>
+              <div class="editor-row__content">
+                <label for="retDropoff" class="editor-row__code"><span class="tok-keyword">let</span> dropoff <span class="tok-punct">=</span></label>
+                <input id="retDropoff" name="ret_dropoff" class="editor-field" [(ngModel)]="form.ret_dropoff" list="guest-people" placeholder="'Who's taking them to the airport'" autocomplete="off" />
+              </div>
+            </div>
+          }
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <p class="editor-row__comment">// Details</p>
+            </div>
+          </div>
 
           <div class="editor-row">
             <span class="editor-row__number" aria-hidden="true"></span>
@@ -130,7 +207,7 @@
             <div class="editor-row__content">
               <label class="toggle">
                 <input type="checkbox" name="auto_pin" [(ngModel)]="form.auto_pin" />
-                Show on the matrix board on the day
+                Show on the matrix board on the day{{ form.ret_flight && !editingReturnOnly ? 's' : '' }}
               </label>
             </div>
           </div>
@@ -139,7 +216,7 @@
             <span class="editor-row__number" aria-hidden="true"></span>
             <div class="editor-row__content">
               <button type="submit" class="btn btn--primary" [disabled]="saving">
-                {{ saving ? 'Saving…' : (editingId ? 'Save changes' : 'Add flight') }}
+                {{ saving ? 'Saving…' : (editingId ? 'Save changes' : (form.ret_flight && form.flight ? 'Add flights' : 'Add flight')) }}
               </button>
             </div>
           </div>
@@ -156,7 +233,7 @@
           }
         </div>
         @if (flights.length) {
-          <span class="muted">{{ comingCount }} still to land</span>
+          <span class="muted">{{ comingText }}</span>
         }
       </div>
 
@@ -167,9 +244,10 @@
           <h2 class="day-title" [class.is-past]="day.past">{{ day.label }}</h2>
           <div class="flight-grid">
             @for (f of day.flights; track f.id) {
-              <article class="card guest-card" [attr.data-state]="f.state">
+              <article class="card guest-card" [attr.data-state]="f.state" [class.guest-card--return]="f.direction === 'return'">
                 <div class="guest-card__head">
                   <div>
+                    <p class="guest-card__kind">{{ f.direction === 'return' ? '🛫 Flying home' : '🛬 Arriving' }}</p>
                     <p class="guest-card__name">{{ f.guest_name }}</p>
                     <p class="guest-card__flight">
                       <strong>{{ f.flight }}</strong>
@@ -179,14 +257,17 @@
                     </p>
                   </div>
                   <div class="guest-card__actions">
-                    <button type="button" class="icon-btn" (click)="edit(f)" [attr.aria-label]="'Edit ' + f.guest_name + '\'s flight'" title="Edit">✏️</button>
+                    <button type="button" class="icon-btn" (click)="edit(f)" [attr.aria-label]="'Edit ' + f.guest_name + '\'s flights'" title="Edit">✏️</button>
                     <button type="button" class="icon-btn" (click)="remove(f)" [disabled]="busy.has(f.id)" [attr.aria-label]="'Remove ' + f.guest_name + '\'s flight'" title="Remove">🗑️</button>
                   </div>
                 </div>
 
-                <p class="guest-card__line">🛬 {{ landsAt(f) }}</p>
+                <p class="guest-card__line">🕒 {{ timeLine(f) }}</p>
                 @if (f.pickup_by) {
-                  <p class="guest-card__line">🚗 {{ f.pickup_by }} picking up</p>
+                  <p class="guest-card__line">🚗 {{ f.pickup_by }} {{ f.direction === 'return' ? 'dropping off' : 'picking up' }}</p>
+                }
+                @if (f.direction !== 'return' && homeLine(f)) {
+                  <p class="guest-card__line">🏠 {{ homeLine(f) }}</p>
                 }
                 @if (f.notes) {
                   <p class="guest-card__notes">{{ f.notes }}</p>

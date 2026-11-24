@@ -22,6 +22,13 @@ $amber: #FBBF24;
   }
 }
 
+// "// Flying in" section comments inside the form
+.editor-row__comment {
+  margin: 0.4rem 0 0;
+  font-size: 0.95rem;
+  color: color-mix(in srgb, var(--neutral-color) 55%, transparent);
+}
+
 // Two inputs side by side (date + time, from + to)
 .pair {
   display: grid;
@@ -55,6 +62,7 @@ $amber: #FBBF24;
 
   &[data-state='tracking'] { border-left-color: $green; }
   &[data-state='queued'] { border-left-color: $amber; }
+  &--return { border-left-style: dashed; }
   &[data-state='landed'],
   &[data-state='past'] { opacity: 0.7; border-left-color: var(--neutral-color); }
 
@@ -66,6 +74,13 @@ $amber: #FBBF24;
     align-items: flex-start;
     gap: 0.5rem;
     margin-bottom: 0.25rem;
+  }
+
+  &__kind {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--neutral-color) 65%, transparent);
   }
 
   &__name { font-size: 1.15rem; color: var(--neutral-color); }

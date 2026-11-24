@@ -5,32 +5,43 @@ import { Observable } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { CodeWindow } from '@app/code-window/code-window';
 import {
-  ChecklistKey, GuestFlight, GuestFlightInput, GuestFlightsResponse, Person, WeddingService,
+  ChecklistKey, GuestFlight, GuestFlightInput, GuestFlightsResponse, Person, ReturnFlightInput, WeddingService,
 } from '@app/services/s/wedding.service';
 
 interface GuestForm {
   guest_name: string;
   event: ChecklistKey;
+  notes: string;
+  auto_pin: boolean;
+  // flying in
   flight: string;
   flight_date: string;
   arrive_time: string;
   from_airport: string;
   to_airport: string;
   pickup_by: string;
-  notes: string;
-  auto_pin: boolean;
+  // flying home
+  ret_flight: string;
+  ret_date: string;
+  ret_time: string;
+  ret_from: string;
+  ret_to: string;
+  ret_dropoff: string;
 }
 
 const emptyForm = (event: ChecklistKey): GuestForm => ({
-  guest_name: '', event, flight: '', flight_date: '', arrive_time: '', from_airport: '', to_airport: '',
-  pickup_by: '', notes: '', auto_pin: true,
+  guest_name: '', event, notes: '', auto_pin: true,
+  flight: '', flight_date: '', arrive_time: '', from_airport: '', to_airport: '', pickup_by: '',
+  ret_flight: '', ret_date: '', ret_time: '', ret_from: '', ret_to: '', ret_dropoff: '',
 });
 
 const REFRESH_MS = 60_000;
+const HOUR = 3600;
 
 /**
- * Guest flights: who is flying in, and when. On the day, each flight goes on the matrix board on its own
- * (the same pins as the flight tracker page), a few hours before it lands.
+ * Guest flights: who is flying in and home again, and when. On the day, each flight goes on the matrix board on
+ * its own (the same pins as the flight tracker page): arrivals a few hours before they land, return flights
+ * shortly before they take off.
  */
 @Component({
   selector: 'app-guest-flights',
@@ -61,7 +72,9 @@ export class GuestFlightsComponent implements OnInit, OnDestroy {
   data: GuestFlightsResponse | null = null;
   people: Person[] = [];
   form: GuestForm = emptyForm('engagement');
-  editingId: number | null = null;
+  editingId: number | null = null;          // the arrival, or a return flight saved on its own
+  editingReturnOnly = false;
+  hadReturn = false;                        // the trip being edited already has a return flight
   loading = true;
   saving = false;
   formOpen = false;
@@ -73,7 +86,7 @@ export class GuestFlightsComponent implements OnInit, OnDestroy {
     return this.data?.flights ?? [];
   }
 
-  /** Flights grouped by the day they land, soonest first; finished days go last */
+  /** Flights grouped by the day they land or leave, soonest first; finished days go last */
   get days(): { date: string; label: string; flights: GuestFlight[]; past: boolean }[] {
     const today = this.localDate(new Date());
     const byDate = new Map<string, GuestFlight[]>();
@@ -92,8 +105,14 @@ export class GuestFlightsComponent implements OnInit, OnDestroy {
     return `${used} of ${this.data.max_pinned} spots in use${used ? ': ' + this.data.pinned.join(', ') : ''}`;
   }
 
-  get comingCount(): number {
-    return this.flights.filter(f => !['landed', 'past'].includes(f.state)).length;
+  get comingText(): string {
+    const coming = this.flights.filter(f => !['landed', 'past'].includes(f.state));
+    const arriving = coming.filter(f => f.direction !== 'return').length;
+    const leaving = coming.length - arriving;
+    const parts: string[] = [];
+    if (arriving) parts.push(`${arriving} arriving`);
+    if (leaving) parts.push(`${leaving} flying home`);
+    return parts.join(' · ') || 'All done';
   }
 
   ngOnInit(): void {
@@ -127,29 +146,64 @@ export class GuestFlightsComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** The return flight that belongs to this arrival, if any */
+  returnOf(f: GuestFlight): GuestFlight | undefined {
+    return this.flights.find(r => r.direction === 'return' && r.trip_id === f.id);
+  }
+
   save(): void {
     const f = this.form;
+    const hasArrival = !this.editingReturnOnly && !!f.flight.trim();
+    const hasReturn = !!f.ret_flight.trim();
     if (!f.guest_name.trim()) return this.showError("Add who's flying.");
-    if (!f.flight.trim()) return this.showError('Add a flight number, like AA1234.');
-    if (!f.flight_date) return this.showError('Add the day they land.');
+    if (!hasArrival && !hasReturn) return this.showError('Add a flight number, like AA1234.');
+    if (hasArrival && !f.flight_date) return this.showError('Add the day they land.');
+    if (hasReturn && !f.ret_date) return this.showError('Add the day they fly home.');
+    if (hasArrival && hasReturn && f.ret_date < f.flight_date) {
+      return this.showError('The flight home is before the day they land.');
+    }
+    if (this.editingId && !this.editingReturnOnly && !hasArrival) {
+      return this.showError("Add the flight they're arriving on, or remove this guest and add the return flight on its own.");
+    }
 
-    // Times are sent as Unix seconds from this browser, so the server's time zone doesn't matter
-    const dayStart = new Date(`${f.flight_date}T00:00`);
-    const arrive = f.arrive_time ? new Date(`${f.flight_date}T${f.arrive_time}`) : null;
-    const payload: GuestFlightInput = {
+    const shared = {
       guest_name: f.guest_name.trim(),
       event: f.event,
-      flight: f.flight.trim().toUpperCase(),
-      flight_date: f.flight_date,
-      day_start_ts: Math.floor(dayStart.getTime() / 1000),
-      arrive_time: f.arrive_time || null,
-      arrive_ts: arrive ? Math.floor(arrive.getTime() / 1000) : null,
-      from_airport: f.from_airport.trim().toUpperCase() || null,
-      to_airport: f.to_airport.trim().toUpperCase() || null,
-      pickup_by: f.pickup_by.trim() || null,
       notes: f.notes.trim() || null,
       auto_pin: f.auto_pin,
     };
+    const returnLeg: ReturnFlightInput | null = hasReturn ? {
+      flight: f.ret_flight.trim().toUpperCase(),
+      flight_date: f.ret_date,
+      day_start_ts: this.ts(f.ret_date),
+      depart_time: f.ret_time || null,
+      depart_ts: f.ret_time ? this.ts(f.ret_date, f.ret_time) : null,
+      // Going home usually retraces the trip in, so fill the airports from it when left blank
+      from_airport: this.code(f.ret_from) || this.code(f.to_airport),
+      to_airport: this.code(f.ret_to) || this.code(f.from_airport),
+      pickup_by: f.ret_dropoff.trim() || null,
+      auto_pin: f.auto_pin,
+    } : null;
+
+    let payload: GuestFlightInput;
+    if (hasArrival) {
+      payload = {
+        ...shared,
+        flight: f.flight.trim().toUpperCase(),
+        flight_date: f.flight_date,
+        day_start_ts: this.ts(f.flight_date),
+        arrive_time: f.arrive_time || null,
+        arrive_ts: f.arrive_time ? this.ts(f.flight_date, f.arrive_time) : null,
+        from_airport: this.code(f.from_airport),
+        to_airport: this.code(f.to_airport),
+        pickup_by: f.pickup_by.trim() || null,
+      };
+      if (returnLeg) payload.return = returnLeg;
+      else if (this.hadReturn) payload.return = null;    // cleared the return flight: remove it
+    } else {
+      // A return flight on its own (they didn't fly in, or you're editing one saved that way)
+      payload = { ...returnLeg!, ...shared, direction: 'return' };
+    }
 
     this.saving = true;
     const request: Observable<GuestFlight> = this.editingId
@@ -158,8 +212,9 @@ export class GuestFlightsComponent implements OnInit, OnDestroy {
     request.subscribe({
       next: saved => {
         this.saving = false;
-        const onBoard = saved.state === 'tracking' ? ' It is on the matrix board now.' : '';
-        this.showSuccess((this.editingId ? 'Saved.' : `${saved.guest_name}'s flight added.`) + onBoard);
+        const onBoard = saved.state === 'tracking' || saved.return?.state === 'tracking' ? ' It is on the matrix board now.' : '';
+        const what = saved.return ? 'flights' : (saved.direction === 'return' ? 'return flight' : 'flight');
+        this.showSuccess((this.editingId ? 'Saved.' : `${saved.guest_name}'s ${what} added.`) + onBoard);
         if (saved.event !== this.event) this.event = saved.event;
         this.cancelEdit();
         this.formOpen = false;
@@ -172,12 +227,28 @@ export class GuestFlightsComponent implements OnInit, OnDestroy {
     });
   }
 
-  edit(f: GuestFlight): void {
-    this.editingId = f.id;
+  /** Editing either leg of a trip opens the whole trip */
+  edit(leg: GuestFlight): void {
+    const arrival = leg.direction === 'return'
+      ? (leg.trip_id ? this.flights.find(f => f.id === leg.trip_id) : undefined)
+      : leg;
+    const ret = arrival ? this.returnOf(arrival) : leg;
+
+    this.editingId = arrival?.id ?? leg.id;
+    this.editingReturnOnly = !arrival;
+    this.hadReturn = !!(arrival && ret);
+    const base = arrival ?? leg;
     this.form = {
-      guest_name: f.guest_name, event: f.event, flight: f.flight, flight_date: f.flight_date,
-      arrive_time: f.arrive_time ?? '', from_airport: f.from_airport ?? '', to_airport: f.to_airport ?? '',
-      pickup_by: f.pickup_by ?? '', notes: f.notes ?? '', auto_pin: f.auto_pin,
+      ...emptyForm(base.event),
+      guest_name: base.guest_name, event: base.event, notes: base.notes ?? '', auto_pin: base.auto_pin,
+      ...(arrival ? {
+        flight: arrival.flight, flight_date: arrival.flight_date, arrive_time: arrival.arrive_time ?? '',
+        from_airport: arrival.from_airport ?? '', to_airport: arrival.to_airport ?? '', pickup_by: arrival.pickup_by ?? '',
+      } : {}),
+      ...(ret ? {
+        ret_flight: ret.flight, ret_date: ret.flight_date, ret_time: ret.depart_time ?? '',
+        ret_from: ret.from_airport ?? '', ret_to: ret.to_airport ?? '', ret_dropoff: ret.pickup_by ?? '',
+      } : {}),
     };
     this.formOpen = true;
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -185,16 +256,22 @@ export class GuestFlightsComponent implements OnInit, OnDestroy {
 
   cancelEdit(): void {
     this.editingId = null;
+    this.editingReturnOnly = false;
+    this.hadReturn = false;
     this.form = emptyForm(this.event);
   }
 
   remove(f: GuestFlight): void {
-    if (!confirm(`Remove ${f.guest_name}'s flight ${f.flight}?`)) return;
+    const ret = f.direction === 'arrival' ? this.returnOf(f) : undefined;
+    const question = f.direction === 'return'
+      ? `Remove ${f.guest_name}'s return flight ${f.flight}?`
+      : `Remove ${f.guest_name}'s flight ${f.flight}${ret ? ` and their return flight ${ret.flight}` : ''}?`;
+    if (!confirm(question)) return;
     this.busy.add(f.id);
     this.api.deleteGuestFlight(f.id).subscribe({
       next: res => {
         this.busy.delete(f.id);
-        if (this.editingId === f.id) this.cancelEdit();
+        if (this.editingId === f.id || this.editingId === f.trip_id) this.cancelEdit();
         this.showSuccess(res.message);
         this.load();
       },
@@ -235,13 +312,14 @@ export class GuestFlightsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * "Pin now" only around the time they fly: the board follows today's flight with that number, so pinning a
-   * flight days early would show someone else's trip. Up to 18 hours before landing covers long-haul flights.
+   * "Pin now" only around the time they fly: the board follows today's flight with that number, so pinning
+   * days early would show someone else's trip. Up to 18 hours before landing covers long-haul arrivals.
    */
   canPinNow(f: GuestFlight): boolean {
     if (['tracking', 'landed'].includes(f.state)) return false;
     const now = Date.now() / 1000;
-    const from = f.arrive_ts ? f.arrive_ts - 18 * 3600 : f.day_start_ts - 3 * 3600;
+    const legTs = this.legTs(f);
+    const from = legTs ? legTs - (f.direction === 'return' ? 6 : 18) * HOUR : f.day_start_ts - 3 * HOUR;
     return now >= from && now <= f.pin_until_ts;
   }
 
@@ -251,8 +329,7 @@ export class GuestFlightsComponent implements OnInit, OnDestroy {
       case 'scheduled': return `Goes on the board ${this.when(f.pin_from_ts)}`;
       case 'pinning': return 'Going on the board within a minute';
       case 'queued': return `All ${this.data?.max_pinned ?? 3} spots are taken. It goes on when one frees up.`;
-      case 'tracking': return 'On the matrix board';
-      case 'landed': return f.landed_at ? `Landed ${this.when(f.landed_at)}` : 'Landed';
+      case 'landed': return f.landed_at ? `Landed ${this.when(f.landed_at)}` : '';
       case 'off': return 'Won’t go on the board on its own';
       default: return '';
     }
@@ -274,17 +351,42 @@ export class GuestFlightsComponent implements OnInit, OnDestroy {
     return typeof p === 'number' ? Math.round(p * 100) : null;
   }
 
-  landsAt(f: GuestFlight): string {
+  /** "Lands 3:40 PM" / "Takes off 11:05 AM" */
+  timeLine(f: GuestFlight): string {
+    if (f.direction === 'return') {
+      return f.depart_ts ? `Takes off ${this.clock(f.depart_ts)}` : 'Take-off time not set';
+    }
     return f.arrive_ts ? `Lands ${this.clock(f.arrive_ts)}` : 'Landing time not set';
   }
 
+  /** On an arrival card: "Flies home Sun, Nov 29 · AA2210" */
+  homeLine(f: GuestFlight): string {
+    const ret = this.returnOf(f);
+    if (!ret) return '';
+    const day = new Date(`${ret.flight_date}T00:00`).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+    return `Flies home ${day}${ret.depart_ts ? ' ' + this.clock(ret.depart_ts) : ''} · ${ret.flight}`;
+  }
+
   // ---------- formatting
+
+  private legTs(f: GuestFlight): number | null {
+    return f.direction === 'return' ? f.depart_ts : f.arrive_ts;
+  }
+
+  /** Unix seconds for a date (and time) in this browser's time zone, so the server's zone doesn't matter */
+  private ts(date: string, time = '00:00'): number {
+    return Math.floor(new Date(`${date}T${time}`).getTime() / 1000);
+  }
+
+  private code(value: string): string | null {
+    return value.trim().toUpperCase() || null;
+  }
 
   private clock(ts: number): string {
     return new Date(ts * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   }
 
-  /** "at 3:40 PM" today, otherwise "Tue 3:40 PM" */
+  /** "at 3:40 PM" today, otherwise "Tue, Nov 24, 3:40 PM" */
   private when(ts: number): string {
     const d = new Date(ts * 1000);
     if (d.toDateString() === new Date().toDateString()) return `at ${this.clock(ts)}`;

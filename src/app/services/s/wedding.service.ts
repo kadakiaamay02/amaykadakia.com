@@ -90,6 +90,7 @@ export interface SendEmailRequest {
 // ---- guest flights (who's flying in; pinned to the matrix board on the day)
 
 export type GuestFlightState = 'scheduled' | 'pinning' | 'queued' | 'tracking' | 'landed' | 'off' | 'past';
+export type GuestFlightDirection = 'arrival' | 'return';
 
 /** The live summary the matrix board shows (tracked_summary() in app.py) */
 export interface TrackedFlightSummary {
@@ -109,16 +110,21 @@ export interface TrackedFlightSummary {
   last_seen_ts?: number | null;
 }
 
+/** One leg: an arrival, or a return flight home (linked to its arrival by trip_id) */
 export interface GuestFlight {
   id: number;
+  direction: GuestFlightDirection;
+  trip_id: number | null;
   guest_name: string;
   event: ChecklistKey;
   flight: string;
   callsign: string | null;
-  flight_date: string;        // YYYY-MM-DD, the day they land
+  flight_date: string;        // YYYY-MM-DD: the day they land (arrival) or leave (return)
   day_start_ts: number;
-  arrive_time: string | null; // HH:MM, local time where they land
+  arrive_time: string | null; // HH:MM landing time, arrivals only
   arrive_ts: number | null;
+  depart_time: string | null; // HH:MM take-off time, return flights only
+  depart_ts: number | null;
   from_airport: string | null;
   to_airport: string | null;
   pickup_by: string | null;
@@ -130,20 +136,39 @@ export interface GuestFlight {
   pin_until_ts: number;
   state: GuestFlightState;
   tracking: TrackedFlightSummary | null;
+  /** Only on add/update responses for an arrival */
+  return?: GuestFlight | null;
 }
 
 export interface GuestFlightInput {
   guest_name: string;
   event: ChecklistKey;
+  direction?: GuestFlightDirection;   // new legs only; defaults to arrival
   flight: string;
   flight_date: string;
   day_start_ts: number;
-  arrive_time: string | null;
-  arrive_ts: number | null;
+  arrive_time?: string | null;
+  arrive_ts?: number | null;
+  depart_time?: string | null;
+  depart_ts?: number | null;
   from_airport: string | null;
   to_airport: string | null;
   pickup_by: string | null;
   notes: string | null;
+  auto_pin: boolean;
+  /** An arrival's return flight: an object adds or edits it, null removes it, leaving it out keeps it */
+  return?: ReturnFlightInput | null;
+}
+
+export interface ReturnFlightInput {
+  flight: string;
+  flight_date: string;
+  day_start_ts: number;
+  depart_time: string | null;
+  depart_ts: number | null;
+  from_airport: string | null;
+  to_airport: string | null;
+  pickup_by: string | null;     // who is dropping them off
   auto_pin: boolean;
 }
 
@@ -152,6 +177,7 @@ export interface GuestFlightsResponse {
   pinned: string[];
   max_pinned: number;
   lead_hours: number;
+  return_lead_hours: number;
   grace_hours: number;
 }
 
