@@ -1,0 +1,164 @@
+@use '../wedding-shared' as *;
+
+$green: #10B981;
+$amber: #FBBF24;
+
+.board-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+  font-family: monospace, monospace;
+  font-size: 0.9rem;
+  color: color-mix(in srgb, var(--neutral-color) 80%, transparent);
+
+  &__dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--neutral-color) 35%, transparent);
+
+    &.is-on { background: $green; box-shadow: 0 0 6px $green; }
+  }
+}
+
+// Two inputs side by side (date + time, from + to)
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+
+  .editor-field { min-width: 0; }
+}
+
+.day-title {
+  margin: 1.5rem 0 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--accent-color);
+
+  &:first-of-type { margin-top: 0; }
+  &.is-past { color: color-mix(in srgb, var(--neutral-color) 50%, transparent); }
+}
+
+.flight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.85rem;
+}
+
+.guest-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-left-color: var(--accent-color);
+
+  &[data-state='tracking'] { border-left-color: $green; }
+  &[data-state='queued'] { border-left-color: $amber; }
+  &[data-state='landed'],
+  &[data-state='past'] { opacity: 0.7; border-left-color: var(--neutral-color); }
+
+  p { margin: 0; }
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  &__name { font-size: 1.15rem; color: var(--neutral-color); }
+
+  &__flight {
+    font-family: monospace, monospace;
+    font-size: 0.95rem;
+
+    strong { color: var(--accent-color); letter-spacing: 0.03em; }
+  }
+
+  &__actions { display: flex; flex-shrink: 0; }
+
+  &__line { font-size: 0.9rem; }
+
+  &__notes {
+    font-size: 0.85rem;
+    white-space: pre-line;
+    color: color-mix(in srgb, var(--neutral-color) 80%, transparent);
+  }
+
+  &__live {
+    font-family: monospace, monospace;
+    font-size: 0.85rem;
+  }
+
+  &__board { font-size: 0.85rem; }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
+
+    .toggle { font-size: 0.85rem; }
+  }
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+  margin-top: 0.3rem;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.78rem;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 50%, transparent);
+  border-radius: 999px;
+
+  &__dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: var(--accent-color);
+  }
+
+  &[data-state='tracking'] { border-color: $green; .state__dot { background: $green; animation: pulse 1.6s infinite; } }
+  &[data-state='pinning'] .state__dot { background: $green; }
+  &[data-state='queued'] { border-color: $amber; .state__dot { background: $amber; } }
+  &[data-state='landed'] .state__dot,
+  &[data-state='past'] .state__dot,
+  &[data-state='off'] .state__dot { background: color-mix(in srgb, var(--neutral-color) 50%, transparent); }
+}
+
+.route-bar {
+  position: relative;
+  height: 2px;
+  margin: 0.7rem 0.6rem 0.45rem;
+  background: color-mix(in srgb, var(--neutral-color) 25%, transparent);
+
+  &__done {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: $green;
+  }
+
+  &__plane {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -55%);
+    font-size: 0.9rem;
+    color: var(--neutral-color);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .state[data-state='tracking'] .state__dot { animation: none; }
+}

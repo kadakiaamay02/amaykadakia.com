@@ -1,0 +1,912 @@
+From c6293c29ee432c8aec6fa3d81c1c8623f404d9b8 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Mon, 23 Nov 2026 23:11:15 -0600
+Subject: [PATCH] Add Guest Flights page for engagement and wedding arrivals
+
+- /samay/guest-flights: add each guest's flight number, landing day and time,
+  route, who's picking them up and notes
+- Shows whether each flight is scheduled, waiting for a spot, on the matrix
+  board (with live progress and ETA) or landed
+- Matrix board switch and Pin now button per flight
+- Linked from the private menu and the Family & contacts page
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_015z3AwjWaJYDSisT3tzZjVx
+---
+ src/app/app.routes.ts                         |   2 +
+ .../guest-flights.component.html              | 235 +++++++++++++
+ .../guest-flights.component.scss              | 164 +++++++++
+ .../guest-flights/guest-flights.component.ts  | 319 ++++++++++++++++++
+ .../wedding-people.component.html             |   2 +
+ .../samay-menu/samay-menu.component.html      |   1 +
+ src/app/services/s/wedding.service.ts         |  91 +++++
+ 7 files changed, 814 insertions(+)
+ create mode 100644 src/app/pages/sa/guest-flights/guest-flights.component.html
+ create mode 100644 src/app/pages/sa/guest-flights/guest-flights.component.scss
+ create mode 100644 src/app/pages/sa/guest-flights/guest-flights.component.ts
+
+diff --git a/src/app/app.routes.ts b/src/app/app.routes.ts
+index 12523b1..4ba92b6 100644
+--- a/src/app/app.routes.ts
++++ b/src/app/app.routes.ts
+@@ -36,6 +36,8 @@ export const routes: Routes = [
+     loadComponent: () => import('./pages/sa/checklist/checklist.component').then(m => m.ChecklistComponent) },
+   { path: 'samay/wedding-people', canActivate: [samayGuard],
+     loadComponent: () => import('./pages/sa/wedding-people/wedding-people.component').then(m => m.WeddingPeopleComponent) },
++  { path: 'samay/guest-flights', canActivate: [samayGuard],
++    loadComponent: () => import('./pages/sa/guest-flights/guest-flights.component').then(m => m.GuestFlightsComponent) },
+   { path: 'admin/dashboard', component: Dashboard },
+   { path: 'flight-tracker', component: FlightTracker },
+   { path: '**', redirectTo: '/about', pathMatch: 'full' },
+diff --git a/src/app/pages/sa/guest-flights/guest-flights.component.html b/src/app/pages/sa/guest-flights/guest-flights.component.html
+new file mode 100644
+index 0000000..f644adc
+--- /dev/null
++++ b/src/app/pages/sa/guest-flights/guest-flights.component.html
+@@ -0,0 +1,235 @@
++<div class="page">
++
++  <header class="page-header">
++    <div class="page-header__title">
++      <h1>Guest Flights</h1>
++      <nav class="page-links" aria-label="Wedding pages">
++        <a routerLink="/samay/engagement-checklist">Engagement checklist</a>
++        <span aria-hidden="true">·</span>
++        <a routerLink="/samay/wedding-people">Family &amp; contacts</a>
++        <span aria-hidden="true">·</span>
++        <a routerLink="/flight-tracker">Flight tracker</a>
++      </nav>
++    </div>
++
++    <!-- Only visible on phones; desktop always shows the form -->
++    <button
++      type="button"
++      class="btn btn--primary add-toggle"
++      (click)="formOpen = !formOpen"
++      [attr.aria-expanded]="formOpen"
++      aria-controls="guest-form">
++      {{ formOpen ? 'Close' : 'Add a flight' }}
++    </button>
++  </header>
++
++  @if (data) {
++    <p class="board-status">
++      <span class="board-status__dot" [class.is-on]="data.pinned.length" aria-hidden="true"></span>
++      Matrix board: {{ boardText }}
++    </p>
++  }
++
++  @if (error) {
++    <div class="error" role="alert">
++      {{ error }}
++      <button type="button" class="icon-btn" (click)="error = ''" aria-label="Dismiss">✕</button>
++    </div>
++  }
++  @if (success) {
++    <div class="success" role="status">{{ success }}</div>
++  }
++
++  <div class="layout">
++
++    <section id="guest-form" class="side-form" [class.is-open]="formOpen" aria-label="Add or edit a guest flight">
++      <app-code-window fileName="arrivals.ts" [lines]="formLines" [keepCaret]="false" [compact]="true">
++        <form class="editor-form" (ngSubmit)="save()">
++
++          @if (editingId) {
++            <div class="editing-banner">Editing {{ form.guest_name || 'a flight' }} <button type="button" class="btn btn--ghost btn--sm" (click)="cancelEdit()">Cancel</button></div>
++          }
++
++          <div class="editor-row">
++            <span class="editor-row__number" aria-hidden="true"></span>
++            <div class="editor-row__content">
++              <label for="guestName" class="editor-row__code"><span class="tok-keyword">let</span> who <span class="tok-punct">=</span></label>
++              <input id="guestName" name="guest_name" class="editor-field" [(ngModel)]="form.guest_name"
++                     list="guest-people" placeholder="'Mom & Dad'" autocomplete="off" required />
++              <datalist id="guest-people">
++                @for (p of people; track p.id) { <option [value]="p.name"></option> }
++              </datalist>
++            </div>
++          </div>
++
++          <div class="editor-row">
++            <span class="editor-row__number" aria-hidden="true"></span>
++            <div class="editor-row__content">
++              <label for="guestFlight" class="editor-row__code"><span class="tok-keyword">let</span> flight <span class="tok-punct">=</span></label>
++              <input id="guestFlight" name="flight" class="editor-field" [(ngModel)]="form.flight" placeholder="'AA1234'"
++                     autocapitalize="characters" autocomplete="off" spellcheck="false" required />
++            </div>
++          </div>
++
++          <div class="editor-row">
++            <span class="editor-row__number" aria-hidden="true"></span>
++            <div class="editor-row__content">
++              <label for="guestDate" class="editor-row__code"><span class="tok-keyword">let</span> lands <span class="tok-punct">=</span></label>
++              <div class="pair">
++                <input id="guestDate" name="flight_date" type="date" class="editor-field" [(ngModel)]="form.flight_date" required />
++                <label for="guestTime" class="visually-hidden">Landing time</label>
++                <input id="guestTime" name="arrive_time" type="time" class="editor-field" [(ngModel)]="form.arrive_time" />
++              </div>
++              <span class="hint">Landing time is your local time. With it, the flight goes on the board {{ data?.lead_hours ?? 5 }} hours before it lands; without it, from the start of the day.</span>
++            </div>
++          </div>
++
++          <div class="editor-row">
++            <span class="editor-row__number" aria-hidden="true"></span>
++            <div class="editor-row__content">
++              <label for="guestFrom" class="editor-row__code"><span class="tok-keyword">let</span> route <span class="tok-punct">=</span></label>
++              <div class="pair">
++                <input id="guestFrom" name="from_airport" class="editor-field" [(ngModel)]="form.from_airport" placeholder="'From: EWR'"
++                       maxlength="4" autocapitalize="characters" autocomplete="off" />
++                <label for="guestTo" class="visually-hidden">Landing airport</label>
++                <input id="guestTo" name="to_airport" class="editor-field" [(ngModel)]="form.to_airport" placeholder="'To: DFW'"
++                       maxlength="4" autocapitalize="characters" autocomplete="off" />
++              </div>
++              <span class="hint">Optional. The landing airport helps tell their leg apart when a flight number makes several stops.</span>
++            </div>
++          </div>
++
++          <div class="editor-row">
++            <span class="editor-row__number" aria-hidden="true"></span>
++            <div class="editor-row__content">
++              <label for="guestPickup" class="editor-row__code"><span class="tok-keyword">let</span> pickup <span class="tok-punct">=</span></label>
++              <input id="guestPickup" name="pickup_by" class="editor-field" [(ngModel)]="form.pickup_by" list="guest-people" placeholder="'Who's picking them up'" autocomplete="off" />
++            </div>
++          </div>
++
++          <div class="editor-row">
++            <span class="editor-row__number" aria-hidden="true"></span>
++            <div class="editor-row__content">
++              <label for="guestEvent" class="editor-row__code"><span class="tok-keyword">let</span> event <span class="tok-punct">=</span></label>
++              <select id="guestEvent" name="event" class="editor-field" [(ngModel)]="form.event">
++                @for (e of events; track e.value) { <option [value]="e.value">{{ e.label }}</option> }
++              </select>
++            </div>
++          </div>
++
++          <div class="editor-row">
++            <span class="editor-row__number" aria-hidden="true"></span>
++            <div class="editor-row__content">
++              <label for="guestNotes" class="editor-row__code"><span class="tok-keyword">let</span> notes <span class="tok-punct">=</span></label>
++              <textarea id="guestNotes" name="notes" class="editor-field" [(ngModel)]="form.notes" placeholder="'Terminal, bags, staying where...'"></textarea>
++            </div>
++          </div>
++
++          <div class="editor-row">
++            <span class="editor-row__number" aria-hidden="true"></span>
++            <div class="editor-row__content">
++              <label class="toggle">
++                <input type="checkbox" name="auto_pin" [(ngModel)]="form.auto_pin" />
++                Show on the matrix board on the day
++              </label>
++            </div>
++          </div>
++
++          <div class="editor-row">
++            <span class="editor-row__number" aria-hidden="true"></span>
++            <div class="editor-row__content">
++              <button type="submit" class="btn btn--primary" [disabled]="saving">
++                {{ saving ? 'Saving…' : (editingId ? 'Save changes' : 'Add flight') }}
++              </button>
++            </div>
++          </div>
++        </form>
++      </app-code-window>
++    </section>
++
++    <section class="arrivals" aria-label="Guest flights">
++      <div class="toolbar">
++        <div class="chips" role="group" aria-label="Event">
++          @for (e of events; track e.value) {
++            <button type="button" class="chip" [class.is-active]="event === e.value" [attr.aria-pressed]="event === e.value"
++                    (click)="setEvent(e.value)">{{ e.label }}</button>
++          }
++        </div>
++        @if (flights.length) {
++          <span class="muted">{{ comingCount }} still to land</span>
++        }
++      </div>
++
++      @if (loading) {
++        <p class="empty-state">Loading…</p>
++      } @else {
++        @for (day of days; track day.date) {
++          <h2 class="day-title" [class.is-past]="day.past">{{ day.label }}</h2>
++          <div class="flight-grid">
++            @for (f of day.flights; track f.id) {
++              <article class="card guest-card" [attr.data-state]="f.state">
++                <div class="guest-card__head">
++                  <div>
++                    <p class="guest-card__name">{{ f.guest_name }}</p>
++                    <p class="guest-card__flight">
++                      <strong>{{ f.flight }}</strong>
++                      @if (f.from_airport || f.to_airport) {
++                        <span class="muted"> · {{ f.from_airport || '?' }} → {{ f.to_airport || '?' }}</span>
++                      }
++                    </p>
++                  </div>
++                  <div class="guest-card__actions">
++                    <button type="button" class="icon-btn" (click)="edit(f)" [attr.aria-label]="'Edit ' + f.guest_name + '\'s flight'" title="Edit">✏️</button>
++                    <button type="button" class="icon-btn" (click)="remove(f)" [disabled]="busy.has(f.id)" [attr.aria-label]="'Remove ' + f.guest_name + '\'s flight'" title="Remove">🗑️</button>
++                  </div>
++                </div>
++
++                <p class="guest-card__line">🛬 {{ landsAt(f) }}</p>
++                @if (f.pickup_by) {
++                  <p class="guest-card__line">🚗 {{ f.pickup_by }} picking up</p>
++                }
++                @if (f.notes) {
++                  <p class="guest-card__notes">{{ f.notes }}</p>
++                }
++
++                <span class="state" [attr.data-state]="f.state">
++                  <span class="state__dot" aria-hidden="true"></span>{{ stateLabels[f.state] }}
++                </span>
++
++                @if (f.tracking) {
++                  @if (progress(f) !== null) {
++                    <div class="route-bar" aria-hidden="true">
++                      <span class="route-bar__done" [style.width.%]="progress(f)"></span>
++                      <span class="route-bar__plane" [style.left.%]="progress(f)">✈</span>
++                    </div>
++                  }
++                  <p class="guest-card__live">{{ liveLine(f) }}</p>
++                } @else if (boardLine(f) && f.state !== 'tracking') {
++                  <p class="guest-card__board muted">{{ boardLine(f) }}</p>
++                }
++
++                @if (f.state !== 'landed' && f.state !== 'past') {
++                  <div class="guest-card__footer">
++                    <label class="toggle">
++                      <input type="checkbox" [checked]="f.auto_pin" (change)="toggleAuto(f)" [disabled]="busy.has(f.id)" />
++                      Matrix board
++                    </label>
++                    @if (canPinNow(f)) {
++                      <button type="button" class="btn btn--outline btn--sm" (click)="pinNow(f)" [disabled]="busy.has(f.id)">
++                        {{ busy.has(f.id) ? 'Pinning…' : 'Pin now' }}
++                      </button>
++                    }
++                  </div>
++                }
++              </article>
++            }
++          </div>
++        } @empty {
++          <div class="empty-state">
++            <p>No flights yet. Add each guest's flight number and the day they land, and it shows up on the matrix board that day.</p>
++          </div>
++        }
++      }
++    </section>
++  </div>
++</div>
+diff --git a/src/app/pages/sa/guest-flights/guest-flights.component.scss b/src/app/pages/sa/guest-flights/guest-flights.component.scss
+new file mode 100644
+index 0000000..3859394
+--- /dev/null
++++ b/src/app/pages/sa/guest-flights/guest-flights.component.scss
+@@ -0,0 +1,164 @@
++@use '../wedding-shared' as *;
++
++$green: #10B981;
++$amber: #FBBF24;
++
++.board-status {
++  display: flex;
++  align-items: center;
++  gap: 0.5rem;
++  margin: 0 0 1.25rem;
++  font-family: monospace, monospace;
++  font-size: 0.9rem;
++  color: color-mix(in srgb, var(--neutral-color) 80%, transparent);
++
++  &__dot {
++    width: 0.55rem;
++    height: 0.55rem;
++    border-radius: 50%;
++    background: color-mix(in srgb, var(--neutral-color) 35%, transparent);
++
++    &.is-on { background: $green; box-shadow: 0 0 6px $green; }
++  }
++}
++
++// Two inputs side by side (date + time, from + to)
++.pair {
++  display: grid;
++  grid-template-columns: 1fr 1fr;
++  gap: 0.5rem;
++
++  .editor-field { min-width: 0; }
++}
++
++.day-title {
++  margin: 1.5rem 0 0.75rem;
++  font-size: 1.05rem;
++  font-weight: 600;
++  color: var(--accent-color);
++
++  &:first-of-type { margin-top: 0; }
++  &.is-past { color: color-mix(in srgb, var(--neutral-color) 50%, transparent); }
++}
++
++.flight-grid {
++  display: grid;
++  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
++  gap: 0.85rem;
++}
++
++.guest-card {
++  display: flex;
++  flex-direction: column;
++  gap: 0.35rem;
++  border-left-color: var(--accent-color);
++
++  &[data-state='tracking'] { border-left-color: $green; }
++  &[data-state='queued'] { border-left-color: $amber; }
++  &[data-state='landed'],
++  &[data-state='past'] { opacity: 0.7; border-left-color: var(--neutral-color); }
++
++  p { margin: 0; }
++
++  &__head {
++    display: flex;
++    justify-content: space-between;
++    align-items: flex-start;
++    gap: 0.5rem;
++    margin-bottom: 0.25rem;
++  }
++
++  &__name { font-size: 1.15rem; color: var(--neutral-color); }
++
++  &__flight {
++    font-family: monospace, monospace;
++    font-size: 0.95rem;
++
++    strong { color: var(--accent-color); letter-spacing: 0.03em; }
++  }
++
++  &__actions { display: flex; flex-shrink: 0; }
++
++  &__line { font-size: 0.9rem; }
++
++  &__notes {
++    font-size: 0.85rem;
++    white-space: pre-line;
++    color: color-mix(in srgb, var(--neutral-color) 80%, transparent);
++  }
++
++  &__live {
++    font-family: monospace, monospace;
++    font-size: 0.85rem;
++  }
++
++  &__board { font-size: 0.85rem; }
++
++  &__footer {
++    display: flex;
++    align-items: center;
++    justify-content: space-between;
++    gap: 0.5rem;
++    margin-top: 0.4rem;
++    padding-top: 0.5rem;
++    border-top: 1px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
++
++    .toggle { font-size: 0.85rem; }
++  }
++}
++
++.state {
++  display: inline-flex;
++  align-items: center;
++  gap: 0.4rem;
++  align-self: flex-start;
++  margin-top: 0.3rem;
++  padding: 0.1rem 0.6rem;
++  font-size: 0.78rem;
++  border: 1px solid color-mix(in srgb, var(--accent-color) 50%, transparent);
++  border-radius: 999px;
++
++  &__dot {
++    width: 0.45rem;
++    height: 0.45rem;
++    border-radius: 50%;
++    background: var(--accent-color);
++  }
++
++  &[data-state='tracking'] { border-color: $green; .state__dot { background: $green; animation: pulse 1.6s infinite; } }
++  &[data-state='pinning'] .state__dot { background: $green; }
++  &[data-state='queued'] { border-color: $amber; .state__dot { background: $amber; } }
++  &[data-state='landed'] .state__dot,
++  &[data-state='past'] .state__dot,
++  &[data-state='off'] .state__dot { background: color-mix(in srgb, var(--neutral-color) 50%, transparent); }
++}
++
++.route-bar {
++  position: relative;
++  height: 2px;
++  margin: 0.7rem 0.6rem 0.45rem;
++  background: color-mix(in srgb, var(--neutral-color) 25%, transparent);
++
++  &__done {
++    position: absolute;
++    inset: 0 auto 0 0;
++    background: $green;
++  }
++
++  &__plane {
++    position: absolute;
++    top: 50%;
++    transform: translate(-50%, -55%);
++    font-size: 0.9rem;
++    color: var(--neutral-color);
++  }
++}
++
++@keyframes pulse {
++  0%, 100% { opacity: 1; }
++  50% { opacity: 0.35; }
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .state[data-state='tracking'] .state__dot { animation: none; }
++}
+diff --git a/src/app/pages/sa/guest-flights/guest-flights.component.ts b/src/app/pages/sa/guest-flights/guest-flights.component.ts
+new file mode 100644
+index 0000000..a1d3b51
+--- /dev/null
++++ b/src/app/pages/sa/guest-flights/guest-flights.component.ts
+@@ -0,0 +1,319 @@
++import { Component, OnDestroy, OnInit, inject } from '@angular/core';
++import { FormsModule } from '@angular/forms';
++import { HttpErrorResponse } from '@angular/common/http';
++import { Observable } from 'rxjs';
++import { RouterLink } from '@angular/router';
++import { CodeWindow } from '@app/code-window/code-window';
++import {
++  ChecklistKey, GuestFlight, GuestFlightInput, GuestFlightsResponse, Person, WeddingService,
++} from '@app/services/s/wedding.service';
++
++interface GuestForm {
++  guest_name: string;
++  event: ChecklistKey;
++  flight: string;
++  flight_date: string;
++  arrive_time: string;
++  from_airport: string;
++  to_airport: string;
++  pickup_by: string;
++  notes: string;
++  auto_pin: boolean;
++}
++
++const emptyForm = (event: ChecklistKey): GuestForm => ({
++  guest_name: '', event, flight: '', flight_date: '', arrive_time: '', from_airport: '', to_airport: '',
++  pickup_by: '', notes: '', auto_pin: true,
++});
++
++const REFRESH_MS = 60_000;
++
++/**
++ * Guest flights: who is flying in, and when. On the day, each flight goes on the matrix board on its own
++ * (the same pins as the flight tracker page), a few hours before it lands.
++ */
++@Component({
++  selector: 'app-guest-flights',
++  standalone: true,
++  imports: [FormsModule, RouterLink, CodeWindow],
++  templateUrl: './guest-flights.component.html',
++  styleUrl: './guest-flights.component.scss'
++})
++export class GuestFlightsComponent implements OnInit, OnDestroy {
++  private api = inject(WeddingService);
++  private messageTimer?: ReturnType<typeof setTimeout>;
++  private refreshTimer?: ReturnType<typeof setInterval>;
++
++  readonly formLines = ['// Guest flights', '// Goes on the matrix board on the day'];
++  readonly events: { value: ChecklistKey; label: string }[] = [
++    { value: 'engagement', label: 'Engagement' }, { value: 'wedding', label: 'Wedding' },
++  ];
++  readonly stateLabels: Record<string, string> = {
++    scheduled: 'Scheduled', pinning: 'Going on the board…', queued: 'Waiting for a free spot',
++    tracking: 'On the board', landed: 'Landed', off: 'Not on the board', past: 'Done',
++  };
++  readonly liveLabels: Record<string, string> = {
++    airborne: 'In the air', on_ground: 'On the ground', not_broadcasting: 'No signal right now',
++    not_found: 'Not flying yet', waiting: 'Checking…',
++  };
++
++  event: ChecklistKey = 'engagement';
++  data: GuestFlightsResponse | null = null;
++  people: Person[] = [];
++  form: GuestForm = emptyForm('engagement');
++  editingId: number | null = null;
++  loading = true;
++  saving = false;
++  formOpen = false;
++  busy = new Set<number>();
++  error = '';
++  success = '';
++
++  get flights(): GuestFlight[] {
++    return this.data?.flights ?? [];
++  }
++
++  /** Flights grouped by the day they land, soonest first; finished days go last */
++  get days(): { date: string; label: string; flights: GuestFlight[]; past: boolean }[] {
++    const today = this.localDate(new Date());
++    const byDate = new Map<string, GuestFlight[]>();
++    for (const f of this.flights) {
++      byDate.set(f.flight_date, [...(byDate.get(f.flight_date) ?? []), f]);
++    }
++    const days = [...byDate.entries()].map(([date, flights]) => ({
++      date, flights, label: this.dayLabel(date, today), past: date < today,
++    }));
++    return [...days.filter(d => !d.past), ...days.filter(d => d.past).reverse()];
++  }
++
++  get boardText(): string {
++    if (!this.data) return '';
++    const used = this.data.pinned.length;
++    return `${used} of ${this.data.max_pinned} spots in use${used ? ': ' + this.data.pinned.join(', ') : ''}`;
++  }
++
++  get comingCount(): number {
++    return this.flights.filter(f => !['landed', 'past'].includes(f.state)).length;
++  }
++
++  ngOnInit(): void {
++    this.load();
++    this.api.getPeople().subscribe({ next: people => this.people = people, error: () => {} });
++    this.refreshTimer = setInterval(() => this.load(true), REFRESH_MS);
++  }
++
++  ngOnDestroy(): void {
++    clearTimeout(this.messageTimer);
++    clearInterval(this.refreshTimer);
++  }
++
++  setEvent(event: ChecklistKey): void {
++    this.event = event;
++    if (!this.editingId) this.form.event = event;
++    this.loading = true;
++    this.load();
++  }
++
++  load(quiet = false): void {
++    this.api.getGuestFlights(this.event).subscribe({
++      next: data => {
++        this.data = data;
++        this.loading = false;
++      },
++      error: () => {
++        this.loading = false;
++        if (!quiet) this.showError('Could not load guest flights. Is the server running?');
++      }
++    });
++  }
++
++  save(): void {
++    const f = this.form;
++    if (!f.guest_name.trim()) return this.showError("Add who's flying.");
++    if (!f.flight.trim()) return this.showError('Add a flight number, like AA1234.');
++    if (!f.flight_date) return this.showError('Add the day they land.');
++
++    // Times are sent as Unix seconds from this browser, so the server's time zone doesn't matter
++    const dayStart = new Date(`${f.flight_date}T00:00`);
++    const arrive = f.arrive_time ? new Date(`${f.flight_date}T${f.arrive_time}`) : null;
++    const payload: GuestFlightInput = {
++      guest_name: f.guest_name.trim(),
++      event: f.event,
++      flight: f.flight.trim().toUpperCase(),
++      flight_date: f.flight_date,
++      day_start_ts: Math.floor(dayStart.getTime() / 1000),
++      arrive_time: f.arrive_time || null,
++      arrive_ts: arrive ? Math.floor(arrive.getTime() / 1000) : null,
++      from_airport: f.from_airport.trim().toUpperCase() || null,
++      to_airport: f.to_airport.trim().toUpperCase() || null,
++      pickup_by: f.pickup_by.trim() || null,
++      notes: f.notes.trim() || null,
++      auto_pin: f.auto_pin,
++    };
++
++    this.saving = true;
++    const request: Observable<GuestFlight> = this.editingId
++      ? this.api.updateGuestFlight(this.editingId, payload)
++      : this.api.addGuestFlight(payload);
++    request.subscribe({
++      next: saved => {
++        this.saving = false;
++        const onBoard = saved.state === 'tracking' ? ' It is on the matrix board now.' : '';
++        this.showSuccess((this.editingId ? 'Saved.' : `${saved.guest_name}'s flight added.`) + onBoard);
++        if (saved.event !== this.event) this.event = saved.event;
++        this.cancelEdit();
++        this.formOpen = false;
++        this.load();
++      },
++      error: (err: HttpErrorResponse) => {
++        this.saving = false;
++        this.showError(err.error?.error || 'Could not save.');
++      }
++    });
++  }
++
++  edit(f: GuestFlight): void {
++    this.editingId = f.id;
++    this.form = {
++      guest_name: f.guest_name, event: f.event, flight: f.flight, flight_date: f.flight_date,
++      arrive_time: f.arrive_time ?? '', from_airport: f.from_airport ?? '', to_airport: f.to_airport ?? '',
++      pickup_by: f.pickup_by ?? '', notes: f.notes ?? '', auto_pin: f.auto_pin,
++    };
++    this.formOpen = true;
++    window.scrollTo({ top: 0, behavior: 'smooth' });
++  }
++
++  cancelEdit(): void {
++    this.editingId = null;
++    this.form = emptyForm(this.event);
++  }
++
++  remove(f: GuestFlight): void {
++    if (!confirm(`Remove ${f.guest_name}'s flight ${f.flight}?`)) return;
++    this.busy.add(f.id);
++    this.api.deleteGuestFlight(f.id).subscribe({
++      next: res => {
++        this.busy.delete(f.id);
++        if (this.editingId === f.id) this.cancelEdit();
++        this.showSuccess(res.message);
++        this.load();
++      },
++      error: () => {
++        this.busy.delete(f.id);
++        this.showError('Could not remove that flight.');
++      }
++    });
++  }
++
++  toggleAuto(f: GuestFlight): void {
++    this.busy.add(f.id);
++    this.api.updateGuestFlight(f.id, { auto_pin: !f.auto_pin }).subscribe({
++      next: () => {
++        this.busy.delete(f.id);
++        this.load(true);
++      },
++      error: (err: HttpErrorResponse) => {
++        this.busy.delete(f.id);
++        this.showError(err.error?.error || 'Could not change that.');
++      }
++    });
++  }
++
++  pinNow(f: GuestFlight): void {
++    this.busy.add(f.id);
++    this.api.pinGuestFlight(f.id).subscribe({
++      next: res => {
++        this.busy.delete(f.id);
++        this.showSuccess(res.message ?? `${f.flight} is on the matrix board.`);
++        this.load(true);
++      },
++      error: (err: HttpErrorResponse) => {
++        this.busy.delete(f.id);
++        this.showError(err.error?.error || `Could not put ${f.flight} on the board.`);
++      }
++    });
++  }
++
++  /**
++   * "Pin now" only around the time they fly: the board follows today's flight with that number, so pinning a
++   * flight days early would show someone else's trip. Up to 18 hours before landing covers long-haul flights.
++   */
++  canPinNow(f: GuestFlight): boolean {
++    if (['tracking', 'landed'].includes(f.state)) return false;
++    const now = Date.now() / 1000;
++    const from = f.arrive_ts ? f.arrive_ts - 18 * 3600 : f.day_start_ts - 3 * 3600;
++    return now >= from && now <= f.pin_until_ts;
++  }
++
++  /** One line under the flight saying what the board is doing with it */
++  boardLine(f: GuestFlight): string {
++    switch (f.state) {
++      case 'scheduled': return `Goes on the board ${this.when(f.pin_from_ts)}`;
++      case 'pinning': return 'Going on the board within a minute';
++      case 'queued': return `All ${this.data?.max_pinned ?? 3} spots are taken. It goes on when one frees up.`;
++      case 'tracking': return 'On the matrix board';
++      case 'landed': return f.landed_at ? `Landed ${this.when(f.landed_at)}` : 'Landed';
++      case 'off': return 'Won’t go on the board on its own';
++      default: return '';
++    }
++  }
++
++  liveLine(f: GuestFlight): string {
++    const t = f.tracking;
++    if (!t) return '';
++    const parts = [t.arrived ? 'Arrived' : (this.liveLabels[t.status] ?? t.status)];
++    if (t.status === 'airborne' && t.altitude_ft) parts.push(`${Math.round(t.altitude_ft).toLocaleString()} ft`);
++    if (!t.arrived && t.eta_ts) parts.push(`ETA ~${this.clock(t.eta_ts)}`);
++    if (!t.arrived && t.remaining_nm) parts.push(`${Math.round(t.remaining_nm).toLocaleString()} nm to go`);
++    return parts.join(' · ');
++  }
++
++  progress(f: GuestFlight): number | null {
++    const p = f.tracking?.progress;
++    if (f.tracking?.arrived) return 100;
++    return typeof p === 'number' ? Math.round(p * 100) : null;
++  }
++
++  landsAt(f: GuestFlight): string {
++    return f.arrive_ts ? `Lands ${this.clock(f.arrive_ts)}` : 'Landing time not set';
++  }
++
++  // ---------- formatting
++
++  private clock(ts: number): string {
++    return new Date(ts * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
++  }
++
++  /** "at 3:40 PM" today, otherwise "Tue 3:40 PM" */
++  private when(ts: number): string {
++    const d = new Date(ts * 1000);
++    if (d.toDateString() === new Date().toDateString()) return `at ${this.clock(ts)}`;
++    return d.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
++  }
++
++  private dayLabel(date: string, today: string): string {
++    const d = new Date(`${date}T00:00`);
++    const label = d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
++    const tomorrow = this.localDate(new Date(Date.now() + 86_400_000));
++    if (date === today) return `Today · ${label}`;
++    if (date === tomorrow) return `Tomorrow · ${label}`;
++    return label;
++  }
++
++  private localDate(d: Date): string {
++    const pad = (n: number) => String(n).padStart(2, '0');
++    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
++  }
++
++  private showSuccess(message: string): void {
++    this.error = '';
++    this.success = message;
++    clearTimeout(this.messageTimer);
++    this.messageTimer = setTimeout(() => this.success = '', 4000);
++  }
++
++  private showError(message: string): void {
++    this.success = '';
++    this.error = message;
++  }
++}
+diff --git a/src/app/pages/sa/wedding-people/wedding-people.component.html b/src/app/pages/sa/wedding-people/wedding-people.component.html
+index a50f9cf..b0b6983 100644
+--- a/src/app/pages/sa/wedding-people/wedding-people.component.html
++++ b/src/app/pages/sa/wedding-people/wedding-people.component.html
+@@ -7,6 +7,8 @@
+         <a routerLink="/samay/engagement-checklist">Engagement checklist</a>
+         <span aria-hidden="true">·</span>
+         <a routerLink="/samay/wedding-checklist">Wedding checklist</a>
++        <span aria-hidden="true">·</span>
++        <a routerLink="/samay/guest-flights">Guest flights</a>
+       </nav>
+     </div>
+ 
+diff --git a/src/app/pages/samay-menu/samay-menu.component.html b/src/app/pages/samay-menu/samay-menu.component.html
+index 87de216..f9b9080 100644
+--- a/src/app/pages/samay-menu/samay-menu.component.html
++++ b/src/app/pages/samay-menu/samay-menu.component.html
+@@ -47,6 +47,7 @@
+     <a class="btn btn--primary" routerLink="/samay/engagement-checklist">Engagement Checklist</a>
+     <a class="btn btn--primary" routerLink="/samay/wedding-checklist">Wedding Checklist</a>
+     <a class="btn btn--primary" routerLink="/samay/wedding-people">Family &amp; Contacts</a>
++    <a class="btn btn--primary" routerLink="/samay/guest-flights">Guest Flights</a>
+     <a class="btn btn--primary" href="http://192.168.1.83:8000/" target="_blank">NFC Manager</a>
+   </div>
+ }
+\ No newline at end of file
+diff --git a/src/app/services/s/wedding.service.ts b/src/app/services/s/wedding.service.ts
+index 84811ad..6b7a6ba 100644
+--- a/src/app/services/s/wedding.service.ts
++++ b/src/app/services/s/wedding.service.ts
+@@ -87,6 +87,74 @@ export interface SendEmailRequest {
+   message?: string;
+ }
+ 
++// ---- guest flights (who's flying in; pinned to the matrix board on the day)
++
++export type GuestFlightState = 'scheduled' | 'pinning' | 'queued' | 'tracking' | 'landed' | 'off' | 'past';
++
++/** The live summary the matrix board shows (tracked_summary() in app.py) */
++export interface TrackedFlightSummary {
++  flight: string;
++  status: string;
++  callsign?: string | null;
++  airline?: string | null;
++  origin?: string | null;
++  destination?: string | null;
++  altitude_ft?: number | null;
++  ground_speed_kt?: number | null;
++  phase?: string | null;
++  arrived?: boolean | null;
++  progress?: number | null;
++  remaining_nm?: number | null;
++  eta_ts?: number | null;
++  last_seen_ts?: number | null;
++}
++
++export interface GuestFlight {
++  id: number;
++  guest_name: string;
++  event: ChecklistKey;
++  flight: string;
++  callsign: string | null;
++  flight_date: string;        // YYYY-MM-DD, the day they land
++  day_start_ts: number;
++  arrive_time: string | null; // HH:MM, local time where they land
++  arrive_ts: number | null;
++  from_airport: string | null;
++  to_airport: string | null;
++  pickup_by: string | null;
++  notes: string | null;
++  auto_pin: boolean;
++  seen_airborne_at: number | null;
++  landed_at: number | null;
++  pin_from_ts: number;
++  pin_until_ts: number;
++  state: GuestFlightState;
++  tracking: TrackedFlightSummary | null;
++}
++
++export interface GuestFlightInput {
++  guest_name: string;
++  event: ChecklistKey;
++  flight: string;
++  flight_date: string;
++  day_start_ts: number;
++  arrive_time: string | null;
++  arrive_ts: number | null;
++  from_airport: string | null;
++  to_airport: string | null;
++  pickup_by: string | null;
++  notes: string | null;
++  auto_pin: boolean;
++}
++
++export interface GuestFlightsResponse {
++  flights: GuestFlight[];
++  pinned: string[];
++  max_pinned: number;
++  lead_hours: number;
++  grace_hours: number;
++}
++
+ /** Talks to the private wedding endpoints in app.py. The login token is added by auth.interceptor.ts. */
+ @Injectable({ providedIn: 'root' })
+ export class WeddingService {
+@@ -136,4 +204,27 @@ export class WeddingService {
+   sendEmail(request: SendEmailRequest): Observable<SendEmailResult> {
+     return this.http.post<SendEmailResult>(`${this.api}/checklists/send-email`, request);
+   }
++
++  // ---- guest flights
++  getGuestFlights(event?: ChecklistKey): Observable<GuestFlightsResponse> {
++    const query = event ? `?event=${event}` : '';
++    return this.http.get<GuestFlightsResponse>(`${this.api}/guest-flights${query}`);
++  }
++
++  addGuestFlight(flight: GuestFlightInput): Observable<GuestFlight> {
++    return this.http.post<GuestFlight>(`${this.api}/guest-flights`, flight);
++  }
++
++  updateGuestFlight(id: number, flight: Partial<GuestFlightInput>): Observable<GuestFlight> {
++    return this.http.put<GuestFlight>(`${this.api}/guest-flights/${id}`, flight);
++  }
++
++  deleteGuestFlight(id: number): Observable<{ message: string }> {
++    return this.http.delete<{ message: string }>(`${this.api}/guest-flights/${id}`);
++  }
++
++  /** Put it on the matrix board now instead of waiting for its time */
++  pinGuestFlight(id: number): Observable<{ message?: string; error?: string }> {
++    return this.http.post<{ message?: string; error?: string }>(`${this.api}/guest-flights/${id}/pin`, {});
++  }
+ }
+-- 
+2.43.0
+

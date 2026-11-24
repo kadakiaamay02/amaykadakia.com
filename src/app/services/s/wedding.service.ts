@@ -87,6 +87,74 @@ export interface SendEmailRequest {
   message?: string;
 }
 
+// ---- guest flights (who's flying in; pinned to the matrix board on the day)
+
+export type GuestFlightState = 'scheduled' | 'pinning' | 'queued' | 'tracking' | 'landed' | 'off' | 'past';
+
+/** The live summary the matrix board shows (tracked_summary() in app.py) */
+export interface TrackedFlightSummary {
+  flight: string;
+  status: string;
+  callsign?: string | null;
+  airline?: string | null;
+  origin?: string | null;
+  destination?: string | null;
+  altitude_ft?: number | null;
+  ground_speed_kt?: number | null;
+  phase?: string | null;
+  arrived?: boolean | null;
+  progress?: number | null;
+  remaining_nm?: number | null;
+  eta_ts?: number | null;
+  last_seen_ts?: number | null;
+}
+
+export interface GuestFlight {
+  id: number;
+  guest_name: string;
+  event: ChecklistKey;
+  flight: string;
+  callsign: string | null;
+  flight_date: string;        // YYYY-MM-DD, the day they land
+  day_start_ts: number;
+  arrive_time: string | null; // HH:MM, local time where they land
+  arrive_ts: number | null;
+  from_airport: string | null;
+  to_airport: string | null;
+  pickup_by: string | null;
+  notes: string | null;
+  auto_pin: boolean;
+  seen_airborne_at: number | null;
+  landed_at: number | null;
+  pin_from_ts: number;
+  pin_until_ts: number;
+  state: GuestFlightState;
+  tracking: TrackedFlightSummary | null;
+}
+
+export interface GuestFlightInput {
+  guest_name: string;
+  event: ChecklistKey;
+  flight: string;
+  flight_date: string;
+  day_start_ts: number;
+  arrive_time: string | null;
+  arrive_ts: number | null;
+  from_airport: string | null;
+  to_airport: string | null;
+  pickup_by: string | null;
+  notes: string | null;
+  auto_pin: boolean;
+}
+
+export interface GuestFlightsResponse {
+  flights: GuestFlight[];
+  pinned: string[];
+  max_pinned: number;
+  lead_hours: number;
+  grace_hours: number;
+}
+
 /** Talks to the private wedding endpoints in app.py. The login token is added by auth.interceptor.ts. */
 @Injectable({ providedIn: 'root' })
 export class WeddingService {
@@ -135,5 +203,28 @@ export class WeddingService {
   // ---- emails
   sendEmail(request: SendEmailRequest): Observable<SendEmailResult> {
     return this.http.post<SendEmailResult>(`${this.api}/checklists/send-email`, request);
+  }
+
+  // ---- guest flights
+  getGuestFlights(event?: ChecklistKey): Observable<GuestFlightsResponse> {
+    const query = event ? `?event=${event}` : '';
+    return this.http.get<GuestFlightsResponse>(`${this.api}/guest-flights${query}`);
+  }
+
+  addGuestFlight(flight: GuestFlightInput): Observable<GuestFlight> {
+    return this.http.post<GuestFlight>(`${this.api}/guest-flights`, flight);
+  }
+
+  updateGuestFlight(id: number, flight: Partial<GuestFlightInput>): Observable<GuestFlight> {
+    return this.http.put<GuestFlight>(`${this.api}/guest-flights/${id}`, flight);
+  }
+
+  deleteGuestFlight(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.api}/guest-flights/${id}`);
+  }
+
+  /** Put it on the matrix board now instead of waiting for its time */
+  pinGuestFlight(id: number): Observable<{ message?: string; error?: string }> {
+    return this.http.post<{ message?: string; error?: string }>(`${this.api}/guest-flights/${id}/pin`, {});
   }
 }

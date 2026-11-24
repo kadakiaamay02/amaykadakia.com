@@ -36,6 +36,8 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/sa/checklist/checklist.component').then(m => m.ChecklistComponent) },
   { path: 'samay/wedding-people', canActivate: [samayGuard],
     loadComponent: () => import('./pages/sa/wedding-people/wedding-people.component').then(m => m.WeddingPeopleComponent) },
+  { path: 'samay/guest-flights', canActivate: [samayGuard],
+    loadComponent: () => import('./pages/sa/guest-flights/guest-flights.component').then(m => m.GuestFlightsComponent) },
   { path: 'admin/dashboard', component: Dashboard },
   { path: 'flight-tracker', component: FlightTracker },
   { path: '**', redirectTo: '/about', pathMatch: 'full' },

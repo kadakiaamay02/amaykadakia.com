@@ -1,0 +1,235 @@
+<div class="page">
+
+  <header class="page-header">
+    <div class="page-header__title">
+      <h1>Guest Flights</h1>
+      <nav class="page-links" aria-label="Wedding pages">
+        <a routerLink="/samay/engagement-checklist">Engagement checklist</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/samay/wedding-people">Family &amp; contacts</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/flight-tracker">Flight tracker</a>
+      </nav>
+    </div>
+
+    <!-- Only visible on phones; desktop always shows the form -->
+    <button
+      type="button"
+      class="btn btn--primary add-toggle"
+      (click)="formOpen = !formOpen"
+      [attr.aria-expanded]="formOpen"
+      aria-controls="guest-form">
+      {{ formOpen ? 'Close' : 'Add a flight' }}
+    </button>
+  </header>
+
+  @if (data) {
+    <p class="board-status">
+      <span class="board-status__dot" [class.is-on]="data.pinned.length" aria-hidden="true"></span>
+      Matrix board: {{ boardText }}
+    </p>
+  }
+
+  @if (error) {
+    <div class="error" role="alert">
+      {{ error }}
+      <button type="button" class="icon-btn" (click)="error = ''" aria-label="Dismiss">✕</button>
+    </div>
+  }
+  @if (success) {
+    <div class="success" role="status">{{ success }}</div>
+  }
+
+  <div class="layout">
+
+    <section id="guest-form" class="side-form" [class.is-open]="formOpen" aria-label="Add or edit a guest flight">
+      <app-code-window fileName="arrivals.ts" [lines]="formLines" [keepCaret]="false" [compact]="true">
+        <form class="editor-form" (ngSubmit)="save()">
+
+          @if (editingId) {
+            <div class="editing-banner">Editing {{ form.guest_name || 'a flight' }} <button type="button" class="btn btn--ghost btn--sm" (click)="cancelEdit()">Cancel</button></div>
+          }
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="guestName" class="editor-row__code"><span class="tok-keyword">let</span> who <span class="tok-punct">=</span></label>
+              <input id="guestName" name="guest_name" class="editor-field" [(ngModel)]="form.guest_name"
+                     list="guest-people" placeholder="'Mom & Dad'" autocomplete="off" required />
+              <datalist id="guest-people">
+                @for (p of people; track p.id) { <option [value]="p.name"></option> }
+              </datalist>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="guestFlight" class="editor-row__code"><span class="tok-keyword">let</span> flight <span class="tok-punct">=</span></label>
+              <input id="guestFlight" name="flight" class="editor-field" [(ngModel)]="form.flight" placeholder="'AA1234'"
+                     autocapitalize="characters" autocomplete="off" spellcheck="false" required />
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="guestDate" class="editor-row__code"><span class="tok-keyword">let</span> lands <span class="tok-punct">=</span></label>
+              <div class="pair">
+                <input id="guestDate" name="flight_date" type="date" class="editor-field" [(ngModel)]="form.flight_date" required />
+                <label for="guestTime" class="visually-hidden">Landing time</label>
+                <input id="guestTime" name="arrive_time" type="time" class="editor-field" [(ngModel)]="form.arrive_time" />
+              </div>
+              <span class="hint">Landing time is your local time. With it, the flight goes on the board {{ data?.lead_hours ?? 5 }} hours before it lands; without it, from the start of the day.</span>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="guestFrom" class="editor-row__code"><span class="tok-keyword">let</span> route <span class="tok-punct">=</span></label>
+              <div class="pair">
+                <input id="guestFrom" name="from_airport" class="editor-field" [(ngModel)]="form.from_airport" placeholder="'From: EWR'"
+                       maxlength="4" autocapitalize="characters" autocomplete="off" />
+                <label for="guestTo" class="visually-hidden">Landing airport</label>
+                <input id="guestTo" name="to_airport" class="editor-field" [(ngModel)]="form.to_airport" placeholder="'To: DFW'"
+                       maxlength="4" autocapitalize="characters" autocomplete="off" />
+              </div>
+              <span class="hint">Optional. The landing airport helps tell their leg apart when a flight number makes several stops.</span>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="guestPickup" class="editor-row__code"><span class="tok-keyword">let</span> pickup <span class="tok-punct">=</span></label>
+              <input id="guestPickup" name="pickup_by" class="editor-field" [(ngModel)]="form.pickup_by" list="guest-people" placeholder="'Who's picking them up'" autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="guestEvent" class="editor-row__code"><span class="tok-keyword">let</span> event <span class="tok-punct">=</span></label>
+              <select id="guestEvent" name="event" class="editor-field" [(ngModel)]="form.event">
+                @for (e of events; track e.value) { <option [value]="e.value">{{ e.label }}</option> }
+              </select>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label for="guestNotes" class="editor-row__code"><span class="tok-keyword">let</span> notes <span class="tok-punct">=</span></label>
+              <textarea id="guestNotes" name="notes" class="editor-field" [(ngModel)]="form.notes" placeholder="'Terminal, bags, staying where...'"></textarea>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <label class="toggle">
+                <input type="checkbox" name="auto_pin" [(ngModel)]="form.auto_pin" />
+                Show on the matrix board on the day
+              </label>
+            </div>
+          </div>
+
+          <div class="editor-row">
+            <span class="editor-row__number" aria-hidden="true"></span>
+            <div class="editor-row__content">
+              <button type="submit" class="btn btn--primary" [disabled]="saving">
+                {{ saving ? 'Saving…' : (editingId ? 'Save changes' : 'Add flight') }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </app-code-window>
+    </section>
+
+    <section class="arrivals" aria-label="Guest flights">
+      <div class="toolbar">
+        <div class="chips" role="group" aria-label="Event">
+          @for (e of events; track e.value) {
+            <button type="button" class="chip" [class.is-active]="event === e.value" [attr.aria-pressed]="event === e.value"
+                    (click)="setEvent(e.value)">{{ e.label }}</button>
+          }
+        </div>
+        @if (flights.length) {
+          <span class="muted">{{ comingCount }} still to land</span>
+        }
+      </div>
+
+      @if (loading) {
+        <p class="empty-state">Loading…</p>
+      } @else {
+        @for (day of days; track day.date) {
+          <h2 class="day-title" [class.is-past]="day.past">{{ day.label }}</h2>
+          <div class="flight-grid">
+            @for (f of day.flights; track f.id) {
+              <article class="card guest-card" [attr.data-state]="f.state">
+                <div class="guest-card__head">
+                  <div>
+                    <p class="guest-card__name">{{ f.guest_name }}</p>
+                    <p class="guest-card__flight">
+                      <strong>{{ f.flight }}</strong>
+                      @if (f.from_airport || f.to_airport) {
+                        <span class="muted"> · {{ f.from_airport || '?' }} → {{ f.to_airport || '?' }}</span>
+                      }
+                    </p>
+                  </div>
+                  <div class="guest-card__actions">
+                    <button type="button" class="icon-btn" (click)="edit(f)" [attr.aria-label]="'Edit ' + f.guest_name + '\'s flight'" title="Edit">✏️</button>
+                    <button type="button" class="icon-btn" (click)="remove(f)" [disabled]="busy.has(f.id)" [attr.aria-label]="'Remove ' + f.guest_name + '\'s flight'" title="Remove">🗑️</button>
+                  </div>
+                </div>
+
+                <p class="guest-card__line">🛬 {{ landsAt(f) }}</p>
+                @if (f.pickup_by) {
+                  <p class="guest-card__line">🚗 {{ f.pickup_by }} picking up</p>
+                }
+                @if (f.notes) {
+                  <p class="guest-card__notes">{{ f.notes }}</p>
+                }
+
+                <span class="state" [attr.data-state]="f.state">
+                  <span class="state__dot" aria-hidden="true"></span>{{ stateLabels[f.state] }}
+                </span>
+
+                @if (f.tracking) {
+                  @if (progress(f) !== null) {
+                    <div class="route-bar" aria-hidden="true">
+                      <span class="route-bar__done" [style.width.%]="progress(f)"></span>
+                      <span class="route-bar__plane" [style.left.%]="progress(f)">✈</span>
+                    </div>
+                  }
+                  <p class="guest-card__live">{{ liveLine(f) }}</p>
+                } @else if (boardLine(f) && f.state !== 'tracking') {
+                  <p class="guest-card__board muted">{{ boardLine(f) }}</p>
+                }
+
+                @if (f.state !== 'landed' && f.state !== 'past') {
+                  <div class="guest-card__footer">
+                    <label class="toggle">
+                      <input type="checkbox" [checked]="f.auto_pin" (change)="toggleAuto(f)" [disabled]="busy.has(f.id)" />
+                      Matrix board
+                    </label>
+                    @if (canPinNow(f)) {
+                      <button type="button" class="btn btn--outline btn--sm" (click)="pinNow(f)" [disabled]="busy.has(f.id)">
+                        {{ busy.has(f.id) ? 'Pinning…' : 'Pin now' }}
+                      </button>
+                    }
+                  </div>
+                }
+              </article>
+            }
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <p>No flights yet. Add each guest's flight number and the day they land, and it shows up on the matrix board that day.</p>
+          </div>
+        }
+      }
+    </section>
+  </div>
+</div>
